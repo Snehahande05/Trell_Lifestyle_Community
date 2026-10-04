@@ -32,13 +32,18 @@ class AddressValidator {
       (v == null || v.trim().isEmpty) ? 'City required' : null;
   static String? validatePin(String? v) {
     if (v == null || v.trim().isEmpty) return 'PIN required';
-    if (!RegExp(r'^\d{6}$').hasMatch(v.trim())) return 'Enter a valid 6-digit PIN';
+    if (!RegExp(r'^\d{6}$').hasMatch(v.trim())) {
+      return 'Enter a valid 6-digit PIN';
+    }
     return null;
   }
+
   static String? validatePhone(String? v) {
     if (v == null || v.trim().isEmpty) return 'Phone required';
     String clean = v.trim().replaceAll('+91', '');
-    if (!RegExp(r'^\d{10}$').hasMatch(clean)) return 'Enter a valid 10-digit mobile number';
+    if (!RegExp(r'^\d{10}$').hasMatch(clean)) {
+      return 'Enter a valid 10-digit mobile number';
+    }
     return null;
   }
 }
@@ -58,14 +63,27 @@ void main() {
 
     // ─── CART TESTS ───────────────────────────────────────────────────────────
     group('Step 6 §1: Cart — quantity, removal, attribution identity', () {
-      test('Same product from different posts remains distinguishable', () async {
-        final product = repository.getProducts().first;
-        await repository.addToCart('u_viewer', product, 'u_creator1', 'post_1');
-        await repository.addToCart('u_viewer', product, 'u_creator1', 'post_2');
-        final cart = repository.getCart('u_viewer');
-        expect(cart.length, 2);
-        expect(cart[0].cartItemId, isNot(cart[1].cartItemId));
-      });
+      test(
+        'Same product from different posts remains distinguishable',
+        () async {
+          final product = repository.getProducts().first;
+          await repository.addToCart(
+            'u_viewer',
+            product,
+            'u_creator1',
+            'post_1',
+          );
+          await repository.addToCart(
+            'u_viewer',
+            product,
+            'u_creator1',
+            'post_2',
+          );
+          final cart = repository.getCart('u_viewer');
+          expect(cart.length, 2);
+          expect(cart[0].cartItemId, isNot(cart[1].cartItemId));
+        },
+      );
 
       test('Same product from same post merges quantity', () async {
         final product = repository.getProducts().first;
@@ -79,7 +97,13 @@ void main() {
       test('Quantity update does not change attribution', () async {
         final product = repository.getProducts().first;
         await repository.addToCart('u_viewer', product, 'u_creator1', 'post_1');
-        await repository.updateCartQuantity('u_viewer', product.id, 'u_creator1', 'post_1', 5);
+        await repository.updateCartQuantity(
+          'u_viewer',
+          product.id,
+          'u_creator1',
+          'post_1',
+          5,
+        );
         final cart = repository.getCart('u_viewer');
         expect(cart.first.quantity, 5);
         expect(cart.first.referrerCreatorId, 'u_creator1');
@@ -89,7 +113,13 @@ void main() {
       test('Quantity 0 removes item from cart', () async {
         final product = repository.getProducts().first;
         await repository.addToCart('u_viewer', product, 'u_creator1', 'post_1');
-        await repository.updateCartQuantity('u_viewer', product.id, 'u_creator1', 'post_1', 0);
+        await repository.updateCartQuantity(
+          'u_viewer',
+          product.id,
+          'u_creator1',
+          'post_1',
+          0,
+        );
         expect(repository.getCart('u_viewer').isEmpty, true);
       });
 
@@ -97,7 +127,12 @@ void main() {
         final product = repository.getProducts().first;
         await repository.addToCart('u_viewer', product, 'u_creator1', 'post_1');
         await repository.addToCart('u_viewer', product, 'u_creator2', 'post_3');
-        await repository.removeFromCart('u_viewer', product.id, 'u_creator1', 'post_1');
+        await repository.removeFromCart(
+          'u_viewer',
+          product.id,
+          'u_creator1',
+          'post_1',
+        );
         final cart = repository.getCart('u_viewer');
         expect(cart.length, 1);
         expect(cart.first.referrerCreatorId, 'u_creator2');
@@ -158,7 +193,9 @@ void main() {
     // ─── PAYMENT OUTCOMES ────────────────────────────────────────────────────
     group('Step 6 §4: Demo payment outcomes', () {
       test('Successful payment creates paid order and clears cart', () async {
-        final product = repository.getProducts().firstWhere((p) => p.id == 'p_2');
+        final product = repository.getProducts().firstWhere(
+          (p) => p.id == 'p_2',
+        );
         await repository.addToCart('u_viewer', product, 'u_creator1', 'post_1');
         expect(repository.getCart('u_viewer').isNotEmpty, true);
 
@@ -174,29 +211,36 @@ void main() {
         expect(repository.getCart('u_viewer').isEmpty, true); // cart cleared
       });
 
-      test('Failed payment creates cancelled order and preserves cart', () async {
-        final product = repository.getProducts().first;
-        await repository.addToCart('u_viewer', product, null, null);
-        final cartBefore = repository.getCart('u_viewer');
+      test(
+        'Failed payment creates cancelled order and preserves cart',
+        () async {
+          final product = repository.getProducts().first;
+          await repository.addToCart('u_viewer', product, null, null);
+          final cartBefore = repository.getCart('u_viewer');
 
-        final order = await repository.createOrder(
-          buyerUserId: 'u_viewer',
-          buyerName: 'Aanya',
-          items: cartBefore,
-          shippingAddress: 'Mumbai, 400050',
-          simulateSuccess: false,
-        );
+          final order = await repository.createOrder(
+            buyerUserId: 'u_viewer',
+            buyerName: 'Aanya',
+            items: cartBefore,
+            shippingAddress: 'Mumbai, 400050',
+            simulateSuccess: false,
+          );
 
-        expect(order.status, OrderStatus.cancelled);
-        // Cart should still have items (cancelled order does not clear cart)
-        expect(repository.getCart('u_viewer').isNotEmpty, true);
-      });
+          expect(order.status, OrderStatus.cancelled);
+          // Cart should still have items (cancelled order does not clear cart)
+          expect(repository.getCart('u_viewer').isNotEmpty, true);
+        },
+      );
 
       test('Failed payment does not create commission', () async {
-        final product = repository.getProducts().firstWhere((p) => p.id == 'p_2');
+        final product = repository.getProducts().firstWhere(
+          (p) => p.id == 'p_2',
+        );
         await repository.addToCart('u_viewer', product, 'u_creator1', 'post_1');
         final cartItems = repository.getCart('u_viewer');
-        final commsBefore = repository.getCommissionsForCreator('u_creator1').length;
+        final commsBefore = repository
+            .getCommissionsForCreator('u_creator1')
+            .length;
 
         await repository.createOrder(
           buyerUserId: 'u_viewer',
@@ -206,7 +250,9 @@ void main() {
           simulateSuccess: false,
         );
 
-        final commsAfter = repository.getCommissionsForCreator('u_creator1').length;
+        final commsAfter = repository
+            .getCommissionsForCreator('u_creator1')
+            .length;
         expect(commsAfter, commsBefore); // No new commission created
       });
 
@@ -214,7 +260,9 @@ void main() {
         final product = repository.getProducts().first;
         await repository.addToCart('u_viewer', product, null, null);
         final cart = repository.getCart('u_viewer');
-        final commsBefore = repository.getCommissionsForCreator('u_creator1').length;
+        final commsBefore = repository
+            .getCommissionsForCreator('u_creator1')
+            .length;
 
         await repository.createOrder(
           buyerUserId: 'u_viewer',
@@ -224,45 +272,56 @@ void main() {
           simulateSuccess: true,
         );
 
-        final commsAfter = repository.getCommissionsForCreator('u_creator1').length;
+        final commsAfter = repository
+            .getCommissionsForCreator('u_creator1')
+            .length;
         expect(commsAfter, commsBefore);
       });
     });
 
     // ─── CHECKOUT IDEMPOTENCY ────────────────────────────────────────────────
     group('Step 6 §5: Checkout idempotency', () {
-      test('Same idempotency key returns same order without duplication', () async {
-        final product = repository.getProducts().first;
-        await repository.addToCart('u_viewer', product, 'u_creator1', 'post_1');
-        final cartItems = repository.getCart('u_viewer');
+      test(
+        'Same idempotency key returns same order without duplication',
+        () async {
+          final product = repository.getProducts().first;
+          await repository.addToCart(
+            'u_viewer',
+            product,
+            'u_creator1',
+            'post_1',
+          );
+          final cartItems = repository.getCart('u_viewer');
 
-        const idemKey = 'idem_test_123';
+          const idemKey = 'idem_test_123';
 
-        final order1 = await repository.createOrder(
-          buyerUserId: 'u_viewer',
-          buyerName: 'Aanya',
-          items: cartItems,
-          shippingAddress: 'Mumbai',
-          simulateSuccess: true,
-          idempotencyKey: idemKey,
-        );
+          final order1 = await repository.createOrder(
+            buyerUserId: 'u_viewer',
+            buyerName: 'Aanya',
+            items: cartItems,
+            shippingAddress: 'Mumbai',
+            simulateSuccess: true,
+            idempotencyKey: idemKey,
+          );
 
-        // Call again with same key — should return same order
-        final order2 = await repository.createOrder(
-          buyerUserId: 'u_viewer',
-          buyerName: 'Aanya',
-          items: cartItems,
-          shippingAddress: 'Mumbai',
-          simulateSuccess: true,
-          idempotencyKey: idemKey,
-        );
+          // Call again with same key — should return same order
+          final order2 = await repository.createOrder(
+            buyerUserId: 'u_viewer',
+            buyerName: 'Aanya',
+            items: cartItems,
+            shippingAddress: 'Mumbai',
+            simulateSuccess: true,
+            idempotencyKey: idemKey,
+          );
 
-        expect(order1.id, order2.id);
-        // Only 1 commission should exist for this order
-        final comms = repository.getCommissionsForCreator('u_creator1')
-            .where((c) => c.orderId == order1.id);
-        expect(comms.length, 1);
-      });
+          expect(order1.id, order2.id);
+          // Only 1 commission should exist for this order
+          final comms = repository
+              .getCommissionsForCreator('u_creator1')
+              .where((c) => c.orderId == order1.id);
+          expect(comms.length, 1);
+        },
+      );
 
       test('Different key creates separate order', () async {
         final product = repository.getProducts().first;
@@ -313,7 +372,10 @@ void main() {
       });
 
       test('Forbidden: refunded → completed (terminal)', () {
-        expect(OrderStatus.refunded.canTransitionTo(OrderStatus.completed), false);
+        expect(
+          OrderStatus.refunded.canTransitionTo(OrderStatus.completed),
+          false,
+        );
       });
 
       test('Repository silently ignores invalid transition', () async {
@@ -332,7 +394,9 @@ void main() {
         // Attempt backward transition to paid
         await repository.updateOrderStatus(order.id, OrderStatus.paid);
         // Should remain completed
-        final retrieved = repository.getOrders().firstWhere((o) => o.id == order.id);
+        final retrieved = repository.getOrders().firstWhere(
+          (o) => o.id == order.id,
+        );
         expect(retrieved.status, OrderStatus.completed);
       });
 
@@ -348,10 +412,18 @@ void main() {
           simulateSuccess: true,
         );
         await repository.updateOrderStatus(order.id, OrderStatus.completed);
-        await repository.updateOrderStatus(order.id, OrderStatus.completed); // second call
+        await repository.updateOrderStatus(
+          order.id,
+          OrderStatus.completed,
+        ); // second call
         // Commission should remain available, not double-settled
-        final comms = repository.getCommissionsForCreator('u_creator1')
-            .where((c) => c.orderId == order.id && c.status == CommissionStatus.available);
+        final comms = repository
+            .getCommissionsForCreator('u_creator1')
+            .where(
+              (c) =>
+                  c.orderId == order.id &&
+                  c.status == CommissionStatus.available,
+            );
         expect(comms.length, 1);
       });
     });
@@ -359,7 +431,9 @@ void main() {
     // ─── COMMISSION CREATION ─────────────────────────────────────────────────
     group('Step 7 §9: Commission creation and settlement', () {
       test('Commission in pending state after paid order', () async {
-        final product = repository.getProducts().firstWhere((p) => p.id == 'p_2');
+        final product = repository.getProducts().firstWhere(
+          (p) => p.id == 'p_2',
+        );
         await repository.addToCart('u_viewer', product, 'u_creator1', 'post_1');
         final order = await repository.createOrder(
           buyerUserId: 'u_viewer',
@@ -368,13 +442,16 @@ void main() {
           shippingAddress: 'Mumbai',
           simulateSuccess: true,
         );
-        final comms = repository.getCommissionsForCreator('u_creator1')
+        final comms = repository
+            .getCommissionsForCreator('u_creator1')
             .where((c) => c.orderId == order.id);
         expect(comms.first.status, CommissionStatus.pending);
       });
 
       test('Commission amount snapshotted: p_2 = ₹2499 × 10% = ₹249.90 (24990 paise)', () async {
-        final product = repository.getProducts().firstWhere((p) => p.id == 'p_2');
+        final product = repository.getProducts().firstWhere(
+          (p) => p.id == 'p_2',
+        );
         await repository.addToCart('u_viewer', product, 'u_creator1', 'post_1');
         final order = await repository.createOrder(
           buyerUserId: 'u_viewer',
@@ -383,22 +460,28 @@ void main() {
           shippingAddress: 'Mumbai',
           simulateSuccess: true,
         );
-        final comm = repository.getCommissionsForCreator('u_creator1')
+        final comm = repository
+            .getCommissionsForCreator('u_creator1')
             .firstWhere((c) => c.orderId == order.id);
         // 249900 * 0.10 = 24990
         expect(comm.amountPaise, 24990);
       });
 
       test('Completing order moves commission pending → available', () async {
-        final product = repository.getProducts().firstWhere((p) => p.id == 'p_2');
+        final product = repository.getProducts().firstWhere(
+          (p) => p.id == 'p_2',
+        );
         await repository.addToCart('u_viewer', product, 'u_creator1', 'post_1');
         final order = await repository.createOrder(
-          buyerUserId: 'u_viewer', buyerName: 'Aanya',
-          items: repository.getCart('u_viewer'), shippingAddress: 'Mumbai',
+          buyerUserId: 'u_viewer',
+          buyerName: 'Aanya',
+          items: repository.getCart('u_viewer'),
+          shippingAddress: 'Mumbai',
           simulateSuccess: true,
         );
         await repository.updateOrderStatus(order.id, OrderStatus.completed);
-        final comm = repository.getCommissionsForCreator('u_creator1')
+        final comm = repository
+            .getCommissionsForCreator('u_creator1')
             .firstWhere((c) => c.orderId == order.id);
         expect(comm.status, CommissionStatus.available);
       });
@@ -407,48 +490,67 @@ void main() {
         final product = repository.getProducts().first;
         await repository.addToCart('u_viewer', product, 'u_creator1', 'post_1');
         final order = await repository.createOrder(
-          buyerUserId: 'u_viewer', buyerName: 'Aanya',
-          items: repository.getCart('u_viewer'), shippingAddress: 'Mumbai',
+          buyerUserId: 'u_viewer',
+          buyerName: 'Aanya',
+          items: repository.getCart('u_viewer'),
+          shippingAddress: 'Mumbai',
           simulateSuccess: true,
         );
         await repository.updateOrderStatus(order.id, OrderStatus.cancelled);
-        final comm = repository.getCommissionsForCreator('u_creator1')
+        final comm = repository
+            .getCommissionsForCreator('u_creator1')
             .firstWhere((c) => c.orderId == order.id);
         expect(comm.status, CommissionStatus.reversed);
       });
 
       test('Refund after completion reverses available commission', () async {
-        final product = repository.getProducts().firstWhere((p) => p.id == 'p_2');
+        final product = repository.getProducts().firstWhere(
+          (p) => p.id == 'p_2',
+        );
         await repository.addToCart('u_viewer', product, 'u_creator1', 'post_1');
         final order = await repository.createOrder(
-          buyerUserId: 'u_viewer', buyerName: 'Aanya',
-          items: repository.getCart('u_viewer'), shippingAddress: 'Mumbai',
+          buyerUserId: 'u_viewer',
+          buyerName: 'Aanya',
+          items: repository.getCart('u_viewer'),
+          shippingAddress: 'Mumbai',
           simulateSuccess: true,
         );
         await repository.updateOrderStatus(order.id, OrderStatus.completed);
         await repository.updateOrderStatus(order.id, OrderStatus.refunded);
-        final comm = repository.getCommissionsForCreator('u_creator1')
+        final comm = repository
+            .getCommissionsForCreator('u_creator1')
             .firstWhere((c) => c.orderId == order.id);
         expect(comm.status, CommissionStatus.reversed);
       });
 
       test('Duplicate commission prevention for same order item', () async {
-        final product = repository.getProducts().firstWhere((p) => p.id == 'p_2');
+        final product = repository.getProducts().firstWhere(
+          (p) => p.id == 'p_2',
+        );
         await repository.addToCart('u_viewer', product, 'u_creator1', 'post_1');
         const idemKey = 'idem_dup_test';
         final cartItems = repository.getCart('u_viewer');
         await repository.createOrder(
-          buyerUserId: 'u_viewer', buyerName: 'Aanya',
-          items: cartItems, shippingAddress: 'Mumbai',
-          simulateSuccess: true, idempotencyKey: idemKey,
+          buyerUserId: 'u_viewer',
+          buyerName: 'Aanya',
+          items: cartItems,
+          shippingAddress: 'Mumbai',
+          simulateSuccess: true,
+          idempotencyKey: idemKey,
         );
         await repository.createOrder(
-          buyerUserId: 'u_viewer', buyerName: 'Aanya',
-          items: cartItems, shippingAddress: 'Mumbai',
-          simulateSuccess: true, idempotencyKey: idemKey,
+          buyerUserId: 'u_viewer',
+          buyerName: 'Aanya',
+          items: cartItems,
+          shippingAddress: 'Mumbai',
+          simulateSuccess: true,
+          idempotencyKey: idemKey,
         );
-        final order = repository.getOrders().firstWhere((o) => o.idempotencyKey == idemKey);
-        final comms = repository.getCommissionsForCreator('u_creator1')
+        final order = repository.getOrders().firstWhere(
+          (o) => o.idempotencyKey == idemKey,
+        );
+        final comms = repository
+            .getCommissionsForCreator('u_creator1')
             .where((c) => c.orderId == order.id);
         expect(comms.length, 1); // Only 1 commission created
       });
@@ -458,38 +560,65 @@ void main() {
     group('Step 7 §10: Withdrawal lifecycle', () {
       test('Below minimum ₹100 withdrawal rejected', () async {
         final req = await repository.requestWithdrawal(
-          'u_creator1', 'Priya', 5000, 'priya@upi');
+          'u_creator1',
+          'Priya',
+          5000,
+          'priya@upi',
+        );
         expect(req, isNull);
       });
 
-      test('Exactly minimum ₹100 (10000 paise) allowed when funds exist', () async {
-        // Priya has 24990 paise available in seed data
-        final req = await repository.requestWithdrawal(
-          'u_creator1', 'Priya', 10000, 'priya@upi');
-        expect(req, isNotNull);
-      });
+      test(
+        'Exactly minimum ₹100 (10000 paise) allowed when funds exist',
+        () async {
+          // Priya has 24990 paise available in seed data
+          final req = await repository.requestWithdrawal(
+            'u_creator1',
+            'Priya',
+            10000,
+            'priya@upi',
+          );
+          expect(req, isNotNull);
+        },
+      );
 
       test('Empty UPI/bank rejected', () async {
         final req = await repository.requestWithdrawal(
-          'u_creator1', 'Priya', 10000, '');
+          'u_creator1',
+          'Priya',
+          10000,
+          '',
+        );
         expect(req, isNull);
       });
 
       test('Negative amount rejected', () async {
         final req = await repository.requestWithdrawal(
-          'u_creator1', 'Priya', -5000, 'priya@upi');
+          'u_creator1',
+          'Priya',
+          -5000,
+          'priya@upi',
+        );
         expect(req, isNull);
       });
 
       test('Zero amount rejected', () async {
         final req = await repository.requestWithdrawal(
-          'u_creator1', 'Priya', 0, 'priya@upi');
+          'u_creator1',
+          'Priya',
+          0,
+          'priya@upi',
+        );
         expect(req, isNull);
       });
 
       test('Insufficient funds rejected', () async {
         final req = await repository.requestWithdrawal(
-          'u_creator1', 'Priya', 9999900, 'priya@upi'); // 99999 rupees
+          'u_creator1',
+          'Priya',
+          9999900,
+          'priya@upi',
+        ); // 99999 rupees
         expect(req, isNull);
       });
 
@@ -501,11 +630,17 @@ void main() {
       test('Partial withdrawal: ₹249.90 available → ₹200 payout + ₹49.90 remaining', () async {
         // Step 1: Request ₹200 withdrawal (reservation)
         final req = await repository.requestWithdrawal(
-          'u_creator1', 'Priya', 20000, 'priya@upi');
+          'u_creator1',
+          'Priya',
+          20000,
+          'priya@upi',
+        );
         expect(req, isNotNull);
 
         // After reservation: 20000 paise should be reserved, 4990 should remain available
-        final commsAfterReserve = repository.getCommissionsForCreator('u_creator1');
+        final commsAfterReserve = repository.getCommissionsForCreator(
+          'u_creator1',
+        );
         final reservedTotal = commsAfterReserve
             .where((c) => c.status == CommissionStatus.reserved)
             .fold(0, (sum, c) => sum + c.amountPaise);
@@ -520,7 +655,9 @@ void main() {
         await repository.processWithdrawal(req!.id, true);
 
         // After approval: 20000 paise paid out, 4990 paise still available
-        final commsAfterPayout = repository.getCommissionsForCreator('u_creator1');
+        final commsAfterPayout = repository.getCommissionsForCreator(
+          'u_creator1',
+        );
         final paidOut = commsAfterPayout
             .where((c) => c.status == CommissionStatus.paidOut)
             .fold(0, (sum, c) => sum + c.amountPaise);
@@ -528,169 +665,298 @@ void main() {
             .where((c) => c.status == CommissionStatus.available)
             .fold(0, (sum, c) => sum + c.amountPaise);
 
-        expect(paidOut, 20000, reason: 'Paid out should be exactly ₹200 (20000 paise)');
-        expect(stillAvailable, 4990, reason: 'Available should be exactly ₹49.90 (4990 paise)');
+        expect(
+          paidOut,
+          20000,
+          reason: 'Paid out should be exactly ₹200 (20000 paise)',
+        );
+        expect(
+          stillAvailable,
+          4990,
+          reason: 'Available should be exactly ₹49.90 (4990 paise)',
+        );
         // Total must equal original 24990
-        expect(paidOut + stillAvailable, 24990, reason: 'Total must reconcile to ₹249.90 (24990 paise)');
+        expect(
+          paidOut + stillAvailable,
+          24990,
+          reason: 'Total must reconcile to ₹249.90 (24990 paise)',
+        );
       });
 
       test('Duplicate approval of same withdrawal is idempotent', () async {
         final req = await repository.requestWithdrawal(
-          'u_creator1', 'Priya', 10000, 'priya@upi');
+          'u_creator1',
+          'Priya',
+          10000,
+          'priya@upi',
+        );
         await repository.processWithdrawal(req!.id, true);
         // Attempt to approve again
         await repository.processWithdrawal(req.id, true);
         // Should still only have one paidOut commission for this withdrawal
-        final comms = repository.getCommissionsForCreator('u_creator1')
-            .where((c) => c.withdrawalId == req.id && c.status == CommissionStatus.paidOut);
+        final comms = repository
+            .getCommissionsForCreator('u_creator1')
+            .where(
+              (c) =>
+                  c.withdrawalId == req.id &&
+                  c.status == CommissionStatus.paidOut,
+            );
         // Should be exactly the reserved amount, not doubled
         final totalPaidOut = comms.fold(0, (sum, c) => sum + c.amountPaise);
         expect(totalPaidOut, lessThanOrEqualTo(10000));
       });
 
-      test('Rejected withdrawal releases reserved funds back to available', () async {
-        final req = await repository.requestWithdrawal(
-          'u_creator1', 'Priya', 20000, 'priya@upi');
-        expect(req, isNotNull);
+      test(
+        'Rejected withdrawal releases reserved funds back to available',
+        () async {
+          final req = await repository.requestWithdrawal(
+            'u_creator1',
+            'Priya',
+            20000,
+            'priya@upi',
+          );
+          expect(req, isNotNull);
 
-        // After reservation
-        final reservedBefore = repository.getCommissionsForCreator('u_creator1')
-            .where((c) => c.status == CommissionStatus.reserved)
-            .fold(0, (sum, c) => sum + c.amountPaise);
-        expect(reservedBefore, 20000);
+          // After reservation
+          final reservedBefore = repository
+              .getCommissionsForCreator('u_creator1')
+              .where((c) => c.status == CommissionStatus.reserved)
+              .fold(0, (sum, c) => sum + c.amountPaise);
+          expect(reservedBefore, 20000);
 
-        // Admin rejects
-        await repository.processWithdrawal(req!.id, false, reason: 'Test rejection');
+          // Admin rejects
+          await repository.processWithdrawal(
+            req!.id,
+            false,
+            reason: 'Test rejection',
+          );
 
-        // Funds should return to available
-        final commsAfter = repository.getCommissionsForCreator('u_creator1');
-        final reservedAfter = commsAfter
-            .where((c) => c.status == CommissionStatus.reserved)
-            .fold(0, (sum, c) => sum + c.amountPaise);
-        final availableAfter = commsAfter
-            .where((c) => c.status == CommissionStatus.available)
-            .fold(0, (sum, c) => sum + c.amountPaise);
+          // Funds should return to available
+          final commsAfter = repository.getCommissionsForCreator('u_creator1');
+          final reservedAfter = commsAfter
+              .where((c) => c.status == CommissionStatus.reserved)
+              .fold(0, (sum, c) => sum + c.amountPaise);
+          final availableAfter = commsAfter
+              .where((c) => c.status == CommissionStatus.available)
+              .fold(0, (sum, c) => sum + c.amountPaise);
 
-        expect(reservedAfter, 0, reason: 'No reserved commissions after rejection');
-        expect(availableAfter, 24990, reason: 'Original available amount restored');
-      });
+          expect(
+            reservedAfter,
+            0,
+            reason: 'No reserved commissions after rejection',
+          );
+          expect(
+            availableAfter,
+            24990,
+            reason: 'Original available amount restored',
+          );
+        },
+      );
     });
 
     // ─── REFUND SCENARIOS ────────────────────────────────────────────────────
     group('Step 7 §11: Refunds at different lifecycle stages', () {
-      test('Refund after payout creates clawback record, paidOut preserved', () async {
-        final product = repository.getProducts().firstWhere((p) => p.id == 'p_2');
-        await repository.addToCart('u_viewer', product, 'u_creator1', 'post_1');
-        final order = await repository.createOrder(
-          buyerUserId: 'u_viewer', buyerName: 'Aanya',
-          items: repository.getCart('u_viewer'), shippingAddress: 'Mumbai',
-          simulateSuccess: true,
-        );
-        // Settle commission
-        await repository.updateOrderStatus(order.id, OrderStatus.completed);
-        // Withdraw all available
-        final req = await repository.requestWithdrawal('u_creator1', 'Priya', 24990, 'priya@upi');
-        await repository.processWithdrawal(req!.id, true);
+      test(
+        'Refund after payout creates clawback record, paidOut preserved',
+        () async {
+          final product = repository.getProducts().firstWhere(
+            (p) => p.id == 'p_2',
+          );
+          await repository.addToCart(
+            'u_viewer',
+            product,
+            'u_creator1',
+            'post_1',
+          );
+          final order = await repository.createOrder(
+            buyerUserId: 'u_viewer',
+            buyerName: 'Aanya',
+            items: repository.getCart('u_viewer'),
+            shippingAddress: 'Mumbai',
+            simulateSuccess: true,
+          );
+          // Settle commission
+          await repository.updateOrderStatus(order.id, OrderStatus.completed);
+          // Withdraw all available
+          final req = await repository.requestWithdrawal(
+            'u_creator1',
+            'Priya',
+            24990,
+            'priya@upi',
+          );
+          await repository.processWithdrawal(req!.id, true);
 
-        // Verify paidOut exists
-        final paidOutBefore = repository.getCommissionsForCreator('u_creator1')
-            .where((c) => c.status == CommissionStatus.paidOut)
-            .fold(0, (sum, c) => sum + c.amountPaise);
-        expect(paidOutBefore, 24990);
+          // Verify paidOut exists
+          final paidOutBefore = repository
+              .getCommissionsForCreator('u_creator1')
+              .where((c) => c.status == CommissionStatus.paidOut)
+              .fold(0, (sum, c) => sum + c.amountPaise);
+          expect(paidOutBefore, 24990);
 
-        // Now refund the order
-        await repository.updateOrderStatus(order.id, OrderStatus.refunded);
+          // Now refund the order
+          await repository.updateOrderStatus(order.id, OrderStatus.refunded);
 
-        // paidOut record should remain (historical cash record)
-        final commsAfter = repository.getCommissionsForCreator('u_creator1');
-        final paidOutAfter = commsAfter
-            .where((c) => c.status == CommissionStatus.paidOut)
-            .fold(0, (sum, c) => sum + c.amountPaise);
-        final clawback = commsAfter
-            .where((c) => c.status == CommissionStatus.clawback)
-            .fold(0, (sum, c) => sum + c.amountPaise);
+          // paidOut record should remain (historical cash record)
+          final commsAfter = repository.getCommissionsForCreator('u_creator1');
+          final paidOutAfter = commsAfter
+              .where((c) => c.status == CommissionStatus.paidOut)
+              .fold(0, (sum, c) => sum + c.amountPaise);
+          final clawback = commsAfter
+              .where((c) => c.status == CommissionStatus.clawback)
+              .fold(0, (sum, c) => sum + c.amountPaise);
 
-        expect(paidOutAfter, 24990, reason: 'Historical paidOut record preserved');
-        expect(clawback, -24990, reason: 'Clawback created as debt');
-      });
+          expect(
+            paidOutAfter,
+            24990,
+            reason: 'Historical paidOut record preserved',
+          );
+          expect(clawback, -24990, reason: 'Clawback created as debt');
+        },
+      );
 
       test('Clawback debt blocks new withdrawal requests', () async {
-        final product = repository.getProducts().firstWhere((p) => p.id == 'p_2');
+        final product = repository.getProducts().firstWhere(
+          (p) => p.id == 'p_2',
+        );
         await repository.addToCart('u_viewer', product, 'u_creator1', 'post_1');
         final order = await repository.createOrder(
-          buyerUserId: 'u_viewer', buyerName: 'Aanya',
-          items: repository.getCart('u_viewer'), shippingAddress: 'Mumbai',
+          buyerUserId: 'u_viewer',
+          buyerName: 'Aanya',
+          items: repository.getCart('u_viewer'),
+          shippingAddress: 'Mumbai',
           simulateSuccess: true,
         );
         await repository.updateOrderStatus(order.id, OrderStatus.completed);
-        final req = await repository.requestWithdrawal('u_creator1', 'Priya', 24990, 'priya@upi');
+        final req = await repository.requestWithdrawal(
+          'u_creator1',
+          'Priya',
+          24990,
+          'priya@upi',
+        );
         await repository.processWithdrawal(req!.id, true);
         await repository.updateOrderStatus(order.id, OrderStatus.refunded);
 
         // Now add new available commission
         // (simulate by creating a new order)
-        final product2 = repository.getProducts().firstWhere((p) => p.id == 'p_3');
-        await repository.addToCart('u_viewer', product2, 'u_creator1', 'post_1');
+        final product2 = repository.getProducts().firstWhere(
+          (p) => p.id == 'p_3',
+        );
+        await repository.addToCart(
+          'u_viewer',
+          product2,
+          'u_creator1',
+          'post_1',
+        );
         final order2 = await repository.createOrder(
-          buyerUserId: 'u_viewer', buyerName: 'Aanya',
-          items: repository.getCart('u_viewer'), shippingAddress: 'Mumbai',
+          buyerUserId: 'u_viewer',
+          buyerName: 'Aanya',
+          items: repository.getCart('u_viewer'),
+          shippingAddress: 'Mumbai',
           simulateSuccess: true,
         );
         await repository.updateOrderStatus(order2.id, OrderStatus.completed);
 
         // Withdrawal should be blocked due to outstanding debt
-        final blockedReq = await repository.requestWithdrawal('u_creator1', 'Priya', 10000, 'priya@upi');
-        expect(blockedReq, isNull, reason: 'Withdrawal blocked due to clawback debt');
-      });
-
-      test('Duplicate refund prevention — refunding twice does not double-reverse', () async {
-        final product = repository.getProducts().firstWhere((p) => p.id == 'p_2');
-        await repository.addToCart('u_viewer', product, 'u_creator1', 'post_1');
-        final order = await repository.createOrder(
-          buyerUserId: 'u_viewer', buyerName: 'Aanya',
-          items: repository.getCart('u_viewer'), shippingAddress: 'Mumbai',
-          simulateSuccess: true,
+        final blockedReq = await repository.requestWithdrawal(
+          'u_creator1',
+          'Priya',
+          10000,
+          'priya@upi',
         );
-        await repository.updateOrderStatus(order.id, OrderStatus.completed);
-        await repository.updateOrderStatus(order.id, OrderStatus.refunded);
-        // Second refund attempt should be blocked by transition table (refunded is terminal)
-        await repository.updateOrderStatus(order.id, OrderStatus.refunded);
-
-        final reversedComms = repository.getCommissionsForCreator('u_creator1')
-            .where((c) => c.orderId == order.id && c.status == CommissionStatus.reversed);
-        // Should only have 1 reversed commission for this order, not 2
-        expect(reversedComms.length, 1);
+        expect(
+          blockedReq,
+          isNull,
+          reason: 'Withdrawal blocked due to clawback debt',
+        );
       });
+
+      test(
+        'Duplicate refund prevention — refunding twice does not double-reverse',
+        () async {
+          final product = repository.getProducts().firstWhere(
+            (p) => p.id == 'p_2',
+          );
+          await repository.addToCart(
+            'u_viewer',
+            product,
+            'u_creator1',
+            'post_1',
+          );
+          final order = await repository.createOrder(
+            buyerUserId: 'u_viewer',
+            buyerName: 'Aanya',
+            items: repository.getCart('u_viewer'),
+            shippingAddress: 'Mumbai',
+            simulateSuccess: true,
+          );
+          await repository.updateOrderStatus(order.id, OrderStatus.completed);
+          await repository.updateOrderStatus(order.id, OrderStatus.refunded);
+          // Second refund attempt should be blocked by transition table (refunded is terminal)
+          await repository.updateOrderStatus(order.id, OrderStatus.refunded);
+
+          final reversedComms = repository
+              .getCommissionsForCreator('u_creator1')
+              .where(
+                (c) =>
+                    c.orderId == order.id &&
+                    c.status == CommissionStatus.reversed,
+              );
+          // Should only have 1 reversed commission for this order, not 2
+          expect(reversedComms.length, 1);
+        },
+      );
     });
 
     // ─── DASHBOARD RECONCILIATION ────────────────────────────────────────────
     group('Step 8 §12: Accounting reconciliation equation', () {
       test('Reconciliation equation holds after complex scenario', () async {
         // Setup: create order, settle, partially withdraw
-        final product = repository.getProducts().firstWhere((p) => p.id == 'p_2');
+        final product = repository.getProducts().firstWhere(
+          (p) => p.id == 'p_2',
+        );
         await repository.addToCart('u_viewer', product, 'u_creator1', 'post_1');
         final order = await repository.createOrder(
-          buyerUserId: 'u_viewer', buyerName: 'Aanya',
-          items: repository.getCart('u_viewer'), shippingAddress: 'Mumbai',
+          buyerUserId: 'u_viewer',
+          buyerName: 'Aanya',
+          items: repository.getCart('u_viewer'),
+          shippingAddress: 'Mumbai',
           simulateSuccess: true,
         );
         await repository.updateOrderStatus(order.id, OrderStatus.completed);
 
         // Partial withdrawal: 20000 of 24990
-        final req = await repository.requestWithdrawal('u_creator1', 'Priya', 20000, 'priya@upi');
+        final req = await repository.requestWithdrawal(
+          'u_creator1',
+          'Priya',
+          20000,
+          'priya@upi',
+        );
         await repository.processWithdrawal(req!.id, true);
 
         final comms = repository.getCommissionsForCreator('u_creator1');
 
-        int pending = comms.where((c) => c.status == CommissionStatus.pending).fold(0, (s, c) => s + c.amountPaise);
-        int available = comms.where((c) => c.status == CommissionStatus.available).fold(0, (s, c) => s + c.amountPaise);
-        int reserved = comms.where((c) => c.status == CommissionStatus.reserved).fold(0, (s, c) => s + c.amountPaise);
-        int paidOut = comms.where((c) => c.status == CommissionStatus.paidOut).fold(0, (s, c) => s + c.amountPaise);
-        int reversed = comms.where((c) => c.status == CommissionStatus.reversed).fold(0, (s, c) => s + c.amountPaise);
-        int clawback = comms.where((c) => c.status == CommissionStatus.clawback).fold(0, (s, c) => s + c.amountPaise);
+        int pending = comms
+            .where((c) => c.status == CommissionStatus.pending)
+            .fold(0, (s, c) => s + c.amountPaise);
+        int available = comms
+            .where((c) => c.status == CommissionStatus.available)
+            .fold(0, (s, c) => s + c.amountPaise);
+        int reserved = comms
+            .where((c) => c.status == CommissionStatus.reserved)
+            .fold(0, (s, c) => s + c.amountPaise);
+        int paidOut = comms
+            .where((c) => c.status == CommissionStatus.paidOut)
+            .fold(0, (s, c) => s + c.amountPaise);
+        int reversed = comms
+            .where((c) => c.status == CommissionStatus.reversed)
+            .fold(0, (s, c) => s + c.amountPaise);
+        int clawback = comms
+            .where((c) => c.status == CommissionStatus.clawback)
+            .fold(0, (s, c) => s + c.amountPaise);
         int recoveryDue = clawback < 0 ? clawback.abs() : 0;
 
-        int grossCommission = pending + available + reserved + paidOut + reversed;
+        int grossCommission =
+            pending + available + reserved + paidOut + reversed;
         int netCashPaid = paidOut; // No actual clawback recovery yet
 
         // Equation: gross - reversed = pending + available + reserved + netCashPaid - recoveryDue
@@ -720,14 +986,24 @@ void main() {
       });
 
       test('Units sold counted separately from order count', () async {
-        final product = repository.getProducts().firstWhere((p) => p.id == 'p_2');
+        final product = repository.getProducts().firstWhere(
+          (p) => p.id == 'p_2',
+        );
         // Add 3 units
         await repository.addToCart('u_viewer', product, 'u_creator1', 'post_1');
-        await repository.updateCartQuantity('u_viewer', product.id, 'u_creator1', 'post_1', 3);
+        await repository.updateCartQuantity(
+          'u_viewer',
+          product.id,
+          'u_creator1',
+          'post_1',
+          3,
+        );
         final cartItems = repository.getCart('u_viewer');
         final order = await repository.createOrder(
-          buyerUserId: 'u_viewer', buyerName: 'Aanya',
-          items: cartItems, shippingAddress: 'Mumbai',
+          buyerUserId: 'u_viewer',
+          buyerName: 'Aanya',
+          items: cartItems,
+          shippingAddress: 'Mumbai',
           simulateSuccess: true,
         );
         // 1 order, 3 units
@@ -735,12 +1011,18 @@ void main() {
         expect(order.items.length, 1); // 1 line item = 1 order
       });
 
-      test('Product earning estimate uses same rounding as commission calc', () {
-        // p_2: 249900 paise * 0.10 = 24990 paise
-        final product = repository.getProducts().firstWhere((p) => p.id == 'p_2');
-        final estimate = (product.pricePaise * product.commissionRate).round();
-        expect(estimate, 24990);
-      });
+      test(
+        'Product earning estimate uses same rounding as commission calc',
+        () {
+          // p_2: 249900 paise * 0.10 = 24990 paise
+          final product = repository.getProducts().firstWhere(
+            (p) => p.id == 'p_2',
+          );
+          final estimate = (product.pricePaise * product.commissionRate)
+              .round();
+          expect(estimate, 24990);
+        },
+      );
     });
 
     // ─── SELF-FOLLOW PREVENTION ──────────────────────────────────────────────
@@ -767,8 +1049,14 @@ void main() {
         // Toggle off something that was never toggled on should not go negative
         await repository.toggleFollowUser('u_viewer', 'u_creator2');
         await repository.toggleFollowUser('u_viewer', 'u_creator2');
-        await repository.toggleFollowUser('u_viewer', 'u_creator2'); // unfollow again when not following
-        expect(repository.getUserById('u_creator2')!.followerCount, greaterThanOrEqualTo(0));
+        await repository.toggleFollowUser(
+          'u_viewer',
+          'u_creator2',
+        ); // unfollow again when not following
+        expect(
+          repository.getUserById('u_creator2')!.followerCount,
+          greaterThanOrEqualTo(0),
+        );
       });
     });
 
@@ -792,7 +1080,9 @@ void main() {
       });
 
       test('Invalid product ID fails validation', () {
-        final post = repository.getPosts().firstWhere((p) => p.taggedProductIds.isNotEmpty);
+        final post = repository.getPosts().firstWhere(
+          (p) => p.taggedProductIds.isNotEmpty,
+        );
         final isValid = AttributionService.validateAttribution(
           repository,
           productId: 'non_existent_product',

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/app_state_provider.dart';
 import '../models/post.dart';
 import '../widgets/short_video_player_item.dart';
@@ -22,7 +23,7 @@ class _VideoFeedScreenState extends State<VideoFeedScreen> {
     'Beauty',
     'Travel',
     'Food',
-    'DIY'
+    'DIY',
   ];
 
   @override
@@ -64,21 +65,23 @@ class _VideoFeedScreenState extends State<VideoFeedScreen> {
                         cat,
                         style: TextStyle(
                           color: isSelected ? Colors.white : Colors.white70,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                           fontSize: 13,
                         ),
                       ),
                       backgroundColor: Colors.grey.shade900,
                       selectedColor: Colors.pinkAccent,
-      onSelected: (bool selected) {
-        provider.setCategory(cat);
-        if (_pageController.hasClients) {
-          _pageController.jumpToPage(0);
-        }
-        setState(() {
-          _currentIndex = 0;
-        });
-      },
+                      onSelected: (bool selected) {
+                        provider.setCategory(cat);
+                        if (_pageController.hasClients) {
+                          _pageController.jumpToPage(0);
+                        }
+                        setState(() {
+                          _currentIndex = 0;
+                        });
+                      },
                     ),
                   );
                 },
@@ -88,76 +91,88 @@ class _VideoFeedScreenState extends State<VideoFeedScreen> {
             // Video Feed ViewPager / Empty State / Loading State
             Expanded(
               child: provider.isLoading
-                  ? const Center(child: CircularProgressIndicator(color: Colors.pinkAccent))
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.pinkAccent,
+                      ),
+                    )
                   : posts.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.video_library_outlined, size: 64, color: Colors.grey),
-                              const SizedBox(height: 12),
-                              Text(
-                                'No posts available in "$selectedCategory"',
-                                style: const TextStyle(color: Colors.white, fontSize: 16),
-                              ),
-                              const SizedBox(height: 8),
-                              ElevatedButton(
-                                onPressed: () {
-                                  provider.setCategory('All');
-                                  if (_pageController.hasClients) {
-                                    _pageController.jumpToPage(0);
-                                  }
-                                  setState(() {
-                                    _currentIndex = 0;
-                                  });
-                                },
-                                child: const Text('Show All Categories'),
-                              ),
-                            ],
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.video_library_outlined,
+                            size: 64,
+                            color: Colors.grey,
                           ),
-                        )
-                      : Builder(
-                          builder: (context) {
-                            final now = DateTime.now().toUtc();
-                            // Centralized active-promotion rule (Step 10 §10):
-                            // Active = isPromoted && promotionExpiry != null && expiryTime > now.
-                            // promotionExpiry == null alone does NOT count as active.
-                            // Deterministic ordering: active promoted first (newest first),
-                            // then non-promoted (newest first).
-                            bool isPostActivelyPromoted(Post p) =>
-                                p.isPromoted &&
-                                p.promotionExpiry != null &&
-                                p.promotionExpiry!.toUtc().isAfter(now);
+                          const SizedBox(height: 12),
+                          Text(
+                            'No posts available in "$selectedCategory"',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: () {
+                              provider.setCategory('All');
+                              if (_pageController.hasClients) {
+                                _pageController.jumpToPage(0);
+                              }
+                              setState(() {
+                                _currentIndex = 0;
+                              });
+                            },
+                            child: const Text('Show All Categories'),
+                          ),
+                        ],
+                      ),
+                    )
+                  : Builder(
+                      builder: (context) {
+                        final now = DateTime.now().toUtc();
+                        // Centralized active-promotion rule (Step 10 §10):
+                        // Active = isPromoted && promotionExpiry != null && expiryTime > now.
+                        // promotionExpiry == null alone does NOT count as active.
+                        // Deterministic ordering: active promoted first (newest first),
+                        // then non-promoted (newest first).
+                        bool isPostActivelyPromoted(Post p) =>
+                            p.isPromoted &&
+                            p.promotionExpiry != null &&
+                            p.promotionExpiry!.toUtc().isAfter(now);
 
-                            final sortedPosts = List<Post>.from(posts)..sort((a, b) {
-                              final aPromoted = isPostActivelyPromoted(a);
-                              final bPromoted = isPostActivelyPromoted(b);
-                              if (aPromoted && !bPromoted) return -1;
-                              if (!aPromoted && bPromoted) return 1;
-                              // Same bucket: newest first (deterministic)
-                              return b.createdAt.compareTo(a.createdAt);
+                        final sortedPosts = List<Post>.from(posts)
+                          ..sort((a, b) {
+                            final aPromoted = isPostActivelyPromoted(a);
+                            final bPromoted = isPostActivelyPromoted(b);
+                            if (aPromoted && !bPromoted) return -1;
+                            if (!aPromoted && bPromoted) return 1;
+                            // Same bucket: newest first (deterministic)
+                            return b.createdAt.compareTo(a.createdAt);
+                          });
+
+                        return PageView.builder(
+                          controller: _pageController,
+                          scrollDirection: Axis.vertical,
+                          itemCount: sortedPosts.length,
+                          onPageChanged: (index) {
+                            setState(() {
+                              _currentIndex = index;
                             });
-
-                            return PageView.builder(
-                              controller: _pageController,
-                              scrollDirection: Axis.vertical,
-                              itemCount: sortedPosts.length,
-                              onPageChanged: (index) {
-                                setState(() {
-                                  _currentIndex = index;
-                                });
-                              },
-                              itemBuilder: (context, index) {
-                                final post = sortedPosts[index];
-                                return ShortVideoPlayerItem(
-                                  key: ValueKey(post.id),
-                                  post: post,
-                                  isSelected: index == _currentIndex,
-                                );
-                              },
+                          },
+                          itemBuilder: (context, index) {
+                            final post = sortedPosts[index];
+                            return ShortVideoPlayerItem(
+                              key: ValueKey(post.id),
+                              post: post,
+                              isSelected: index == _currentIndex,
                             );
                           },
-                        ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),

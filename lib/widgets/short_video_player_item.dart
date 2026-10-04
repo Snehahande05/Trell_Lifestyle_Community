@@ -1,8 +1,10 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+
 import '../models/post.dart';
 import '../models/product.dart';
 import '../providers/app_state_provider.dart';
@@ -23,7 +25,8 @@ class ShortVideoPlayerItem extends StatefulWidget {
   State<ShortVideoPlayerItem> createState() => _ShortVideoPlayerItemState();
 }
 
-class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem> with WidgetsBindingObserver {
+class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem>
+    with WidgetsBindingObserver {
   VideoPlayerController? _controller;
   bool _isInitialized = false;
   bool _hasError = false;
@@ -39,9 +42,12 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem> with Widget
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       _controller?.pause();
-    } else if (state == AppLifecycleState.resumed && widget.isSelected && !_userPaused) {
+    } else if (state == AppLifecycleState.resumed &&
+        widget.isSelected &&
+        !_userPaused) {
       _controller?.play();
     }
   }
@@ -63,7 +69,9 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem> with Widget
         if (file.existsSync()) {
           _controller = VideoPlayerController.file(file);
         } else {
-          _controller = VideoPlayerController.asset('assets/videos/fashion_trend.mp4');
+          _controller = VideoPlayerController.asset(
+            'assets/videos/fashion_trend.mp4',
+          );
         }
       }
       await _controller!.initialize();
@@ -99,7 +107,8 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem> with Widget
   void didUpdateWidget(covariant ShortVideoPlayerItem oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (oldWidget.post.id != widget.post.id || oldWidget.post.videoPath != widget.post.videoPath) {
+    if (oldWidget.post.id != widget.post.id ||
+        oldWidget.post.videoPath != widget.post.videoPath) {
       _userPaused = false;
       _initializePlayer();
       return;
@@ -163,26 +172,51 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem> with Widget
     if (filter == 'B&W Mono') {
       return ColorFiltered(
         colorFilter: const ColorFilter.matrix(<double>[
-          0.2126, 0.7152, 0.0722, 0, 0,
-          0.2126, 0.7152, 0.0722, 0, 0,
-          0.2126, 0.7152, 0.0722, 0, 0,
-          0,      0,      0,      1, 0,
+          0.2126,
+          0.7152,
+          0.0722,
+          0,
+          0,
+          0.2126,
+          0.7152,
+          0.0722,
+          0,
+          0,
+          0.2126,
+          0.7152,
+          0.0722,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
         ]),
         child: playerWidget,
       );
     } else if (filter == 'Vintage Warm') {
       return ColorFiltered(
-        colorFilter: ColorFilter.mode(Colors.amber.withValues(alpha: 0.25), BlendMode.colorBurn),
+        colorFilter: ColorFilter.mode(
+          Colors.amber.withValues(alpha: 0.25),
+          BlendMode.colorBurn,
+        ),
         child: playerWidget,
       );
     } else if (filter == 'Soft Glow') {
       return ColorFiltered(
-        colorFilter: ColorFilter.mode(Colors.pink.withValues(alpha: 0.20), BlendMode.colorBurn),
+        colorFilter: ColorFilter.mode(
+          Colors.pink.withValues(alpha: 0.20),
+          BlendMode.colorBurn,
+        ),
         child: playerWidget,
       );
     } else if (filter == 'Vibrant Summer') {
       return ColorFiltered(
-        colorFilter: ColorFilter.mode(Colors.orange.withValues(alpha: 0.20), BlendMode.colorBurn),
+        colorFilter: ColorFilter.mode(
+          Colors.orange.withValues(alpha: 0.20),
+          BlendMode.colorBurn,
+        ),
         child: playerWidget,
       );
     }
@@ -193,23 +227,27 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem> with Widget
   Widget build(BuildContext context) {
     final provider = context.watch<AppStateProvider>();
     final currentUser = provider.currentUser;
-    final isLiked = currentUser != null && widget.post.likedUserIds.contains(currentUser.id);
+    final isLiked =
+        currentUser != null &&
+        widget.post.likedUserIds.contains(currentUser.id);
     final isFollowing = provider.isFollowing(widget.post.creatorId);
 
     // Tagged Products
     final taggedProducts = widget.post.taggedProductIds
-        .map((id) => provider.allProducts.firstWhere(
-              (p) => p.id == id,
-              orElse: () => Product(
-                id: id,
-                name: 'Product $id',
-                imageUrl: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400',
-                description: '',
-                category: 'General',
-                pricePaise: 99900,
-                commissionRate: 0.10,
-              ),
-            ))
+        .map(
+          (id) => provider.allProducts.firstWhere(
+            (p) => p.id == id,
+            orElse: () => Product(
+              id: id,
+              name: 'Product $id',
+              imageUrl: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400',
+              description: '',
+              category: 'General',
+              pricePaise: 99900,
+              commissionRate: 0.10,
+            ),
+          ),
+        )
         .toList();
 
     return GestureDetector(
@@ -225,11 +263,18 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem> with Widget
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
+                        const Icon(
+                          Icons.error_outline,
+                          color: Colors.redAccent,
+                          size: 48,
+                        ),
                         const SizedBox(height: 12),
                         const Text(
                           'Playback Failure',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         ElevatedButton.icon(
@@ -242,24 +287,30 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem> with Widget
                           },
                           icon: const Icon(Icons.refresh),
                           label: const Text('Retry'),
-                        )
+                        ),
                       ],
                     ),
                   ),
                 )
               : _isInitialized && _controller != null
-                  ? _buildVideoPlayerWithFilter()
-                  : Container(
-                      color: Colors.black,
-                      child: const Center(
-                        child: CircularProgressIndicator(color: Colors.pinkAccent),
-                      ),
-                    ),
+              ? _buildVideoPlayerWithFilter()
+              : Container(
+                  color: Colors.black,
+                  child: const Center(
+                    child: CircularProgressIndicator(color: Colors.pinkAccent),
+                  ),
+                ),
 
           // Play/Pause Overlay indicator when paused
-          if (_isInitialized && _controller != null && !_controller!.value.isPlaying)
+          if (_isInitialized &&
+              _controller != null &&
+              !_controller!.value.isPlaying)
             const Center(
-              child: Icon(Icons.play_circle_fill, size: 72, color: Colors.white70),
+              child: Icon(
+                Icons.play_circle_fill,
+                size: 72,
+                color: Colors.white70,
+              ),
             ),
 
           // Mute Button (Top Right)
@@ -284,7 +335,10 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem> with Widget
               top: 50,
               left: 16,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Colors.amber, Colors.deepOrange],
@@ -321,7 +375,9 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem> with Widget
                   children: [
                     CircleAvatar(
                       radius: 24,
-                      backgroundImage: NetworkImage(widget.post.creatorAvatarUrl),
+                      backgroundImage: NetworkImage(
+                        widget.post.creatorAvatarUrl,
+                      ),
                     ),
                     if (currentUser?.id != widget.post.creatorId)
                       Positioned(
@@ -332,7 +388,9 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem> with Widget
                           },
                           child: CircleAvatar(
                             radius: 12,
-                            backgroundColor: isFollowing ? Colors.grey : Colors.pinkAccent,
+                            backgroundColor: isFollowing
+                                ? Colors.grey
+                                : Colors.pinkAccent,
                             child: Icon(
                               isFollowing ? Icons.check : Icons.add,
                               color: Colors.white,
@@ -358,20 +416,30 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem> with Widget
                 ),
                 Text(
                   '${widget.post.likedUserIds.length}',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 16),
 
                 // Comment Button
                 IconButton(
-                  icon: const Icon(Icons.mode_comment_outlined, color: Colors.white, size: 30),
+                  icon: const Icon(
+                    Icons.mode_comment_outlined,
+                    color: Colors.white,
+                    size: 30,
+                  ),
                   onPressed: () {
                     _showCommentsModal(context, provider);
                   },
                 ),
                 Text(
                   '${widget.post.comments.length}',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 16),
 
@@ -380,14 +448,20 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem> with Widget
                   icon: const Icon(Icons.share, color: Colors.white, size: 30),
                   onPressed: () {
                     provider.incrementShare(widget.post.id);
-                    Share.share(
-                      'Check out this video by ${widget.post.creatorName} on Trell! ${widget.post.caption}',
+                    SharePlus.instance.share(
+                      ShareParams(
+                        text:
+                            'Check out this video by ${widget.post.creatorName} on Trell! ${widget.post.caption}',
+                      ),
                     );
                   },
                 ),
                 Text(
                   '${widget.post.sharesCount}',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
@@ -413,9 +487,16 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem> with Widget
                         fontSize: 16,
                       ),
                     ),
-                    if (provider.getUserById(widget.post.creatorId)?.isVerifiedCreator ?? widget.post.isVerifiedCreator) ...[
+                    if (provider
+                            .getUserById(widget.post.creatorId)
+                            ?.isVerifiedCreator ??
+                        widget.post.isVerifiedCreator) ...[
                       const SizedBox(width: 4),
-                      const Icon(Icons.verified, color: Colors.blueAccent, size: 16),
+                      const Icon(
+                        Icons.verified,
+                        color: Colors.blueAccent,
+                        size: 16,
+                      ),
                     ],
                   ],
                 ),
@@ -431,14 +512,22 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem> with Widget
                 const SizedBox(height: 6),
 
                 // Music/Filter metadata if present
-                if (widget.post.musicTitle != null || widget.post.filterName != null)
+                if (widget.post.musicTitle != null ||
+                    widget.post.filterName != null)
                   Row(
                     children: [
-                      const Icon(Icons.music_note, color: Colors.amber, size: 14),
+                      const Icon(
+                        Icons.music_note,
+                        color: Colors.amber,
+                        size: 14,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         '${widget.post.musicTitle ?? "Original Sound"} ${widget.post.filterName != null ? "• ${widget.post.filterName}" : ""}',
-                        style: const TextStyle(color: Colors.amber, fontSize: 12),
+                        style: const TextStyle(
+                          color: Colors.amber,
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),
@@ -456,7 +545,10 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem> with Widget
                         return GestureDetector(
                           onTap: () {
                             // Record click and navigate with creator referral context
-                            provider.recordProductClick(widget.post.id, product.id);
+                            provider.recordProductClick(
+                              widget.post.id,
+                              product.id,
+                            );
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -474,7 +566,9 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem> with Widget
                             decoration: BoxDecoration(
                               color: Colors.black.withValues(alpha: 0.75),
                               borderRadius: BorderRadius.circular(10),
-                              border: Border.all(color: Colors.pinkAccent.withValues(alpha: 0.6)),
+                              border: Border.all(
+                                color: Colors.pinkAccent.withValues(alpha: 0.6),
+                              ),
                             ),
                             child: Row(
                               children: [
@@ -485,11 +579,14 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem> with Widget
                                     width: 48,
                                     height: 48,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => Container(
+                                    errorBuilder: (_, _, _) => Container(
                                       width: 48,
                                       height: 48,
                                       color: Colors.grey.shade800,
-                                      child: const Icon(Icons.shopping_bag, color: Colors.white),
+                                      child: const Icon(
+                                        Icons.shopping_bag,
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -509,7 +606,9 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem> with Widget
                                       ),
                                     ),
                                     Text(
-                                      CurrencyUtils.formatPaise(product.pricePaise),
+                                      CurrencyUtils.formatPaise(
+                                        product.pricePaise,
+                                      ),
                                       style: const TextStyle(
                                         color: Colors.pinkAccent,
                                         fontWeight: FontWeight.w600,
@@ -519,7 +618,10 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem> with Widget
                                   ],
                                 ),
                                 const SizedBox(width: 6),
-                                const Icon(Icons.chevron_right, color: Colors.white),
+                                const Icon(
+                                  Icons.chevron_right,
+                                  color: Colors.white,
+                                ),
                               ],
                             ),
                           ),
@@ -586,8 +688,12 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem> with Widget
                                   leading: CircleAvatar(
                                     backgroundColor: Colors.pinkAccent,
                                     child: Text(
-                                      c.userName.isNotEmpty ? c.userName[0] : 'U',
-                                      style: const TextStyle(color: Colors.white),
+                                      c.userName.isNotEmpty
+                                          ? c.userName[0]
+                                          : 'U',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   ),
                                   title: Text(
@@ -600,7 +706,10 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem> with Widget
                                   ),
                                   subtitle: Text(
                                     c.text,
-                                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                    ),
                                   ),
                                 );
                               },
@@ -626,10 +735,16 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem> with Widget
                         ),
                         const SizedBox(width: 8),
                         IconButton(
-                          icon: const Icon(Icons.send, color: Colors.pinkAccent),
+                          icon: const Icon(
+                            Icons.send,
+                            color: Colors.pinkAccent,
+                          ),
                           onPressed: () {
                             if (commentController.text.trim().isNotEmpty) {
-                              provider.addComment(widget.post.id, commentController.text);
+                              provider.addComment(
+                                widget.post.id,
+                                commentController.text,
+                              );
                               commentController.clear();
                               setModalState(() {});
                             }

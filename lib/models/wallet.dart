@@ -40,12 +40,12 @@
 // ============================================================
 
 enum CommissionStatus {
-  pending,    // Created on paid order; not yet withdrawable
-  available,  // Order completed; ready for withdrawal
-  reserved,   // Withdrawal request pending admin approval
-  paidOut,    // Withdrawal approved and paid out (demo)
-  reversed,   // Refunded or cancelled; no longer an entitlement
-  clawback,   // Refunded AFTER payout; debt owed to platform
+  pending, // Created on paid order; not yet withdrawable
+  available, // Order completed; ready for withdrawal
+  reserved, // Withdrawal request pending admin approval
+  paidOut, // Withdrawal approved and paid out (demo)
+  reversed, // Refunded or cancelled; no longer an entitlement
+  clawback, // Refunded AFTER payout; debt owed to platform
 }
 
 class CommissionTransaction {
@@ -56,6 +56,7 @@ class CommissionTransaction {
   final int amountPaise;
   final CommissionStatus status;
   final DateTime createdAt;
+
   /// Optional: ID of the withdrawal request that consumed this commission
   final String? withdrawalId;
 
@@ -71,15 +72,15 @@ class CommissionTransaction {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'creatorId': creatorId,
-        'orderId': orderId,
-        'productId': productId,
-        'amountPaise': amountPaise,
-        'status': status.index,
-        'createdAt': createdAt.toIso8601String(),
-        'withdrawalId': withdrawalId,
-      };
+    'id': id,
+    'creatorId': creatorId,
+    'orderId': orderId,
+    'productId': productId,
+    'amountPaise': amountPaise,
+    'status': status.index,
+    'createdAt': createdAt.toIso8601String(),
+    'withdrawalId': withdrawalId,
+  };
 
   factory CommissionTransaction.fromJson(Map<String, dynamic> json) =>
       CommissionTransaction(
@@ -97,17 +98,16 @@ class CommissionTransaction {
     CommissionStatus? status,
     int? amountPaise,
     String? withdrawalId,
-  }) =>
-      CommissionTransaction(
-        id: id,
-        creatorId: creatorId,
-        orderId: orderId,
-        productId: productId,
-        amountPaise: amountPaise ?? this.amountPaise,
-        status: status ?? this.status,
-        createdAt: createdAt,
-        withdrawalId: withdrawalId ?? this.withdrawalId,
-      );
+  }) => CommissionTransaction(
+    id: id,
+    creatorId: creatorId,
+    orderId: orderId,
+    productId: productId,
+    amountPaise: amountPaise ?? this.amountPaise,
+    status: status ?? this.status,
+    createdAt: createdAt,
+    withdrawalId: withdrawalId ?? this.withdrawalId,
+  );
 }
 
 // Transition table for WithdrawalStatus (enforced in repository):
@@ -140,16 +140,16 @@ class WithdrawalRequest {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'creatorId': creatorId,
-        'creatorName': creatorName,
-        'amountPaise': amountPaise,
-        'upiIdOrBank': upiIdOrBank,
-        'status': status.index,
-        'requestedAt': requestedAt.toIso8601String(),
-        'processedAt': processedAt?.toIso8601String(),
-        'rejectionReason': rejectionReason,
-      };
+    'id': id,
+    'creatorId': creatorId,
+    'creatorName': creatorName,
+    'amountPaise': amountPaise,
+    'upiIdOrBank': upiIdOrBank,
+    'status': status.index,
+    'requestedAt': requestedAt.toIso8601String(),
+    'processedAt': processedAt?.toIso8601String(),
+    'rejectionReason': rejectionReason,
+  };
 
   factory WithdrawalRequest.fromJson(Map<String, dynamic> json) =>
       WithdrawalRequest(
@@ -170,18 +170,17 @@ class WithdrawalRequest {
     WithdrawalStatus? status,
     DateTime? processedAt,
     String? rejectionReason,
-  }) =>
-      WithdrawalRequest(
-        id: id,
-        creatorId: creatorId,
-        creatorName: creatorName,
-        amountPaise: amountPaise,
-        upiIdOrBank: upiIdOrBank,
-        status: status ?? this.status,
-        requestedAt: requestedAt,
-        processedAt: processedAt ?? this.processedAt,
-        rejectionReason: rejectionReason ?? this.rejectionReason,
-      );
+  }) => WithdrawalRequest(
+    id: id,
+    creatorId: creatorId,
+    creatorName: creatorName,
+    amountPaise: amountPaise,
+    upiIdOrBank: upiIdOrBank,
+    status: status ?? this.status,
+    requestedAt: requestedAt,
+    processedAt: processedAt ?? this.processedAt,
+    rejectionReason: rejectionReason ?? this.rejectionReason,
+  );
 }
 
 class RevenueShareRecord {
@@ -204,14 +203,14 @@ class RevenueShareRecord {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'creatorId': creatorId,
-        'sourceAmountPaise': sourceAmountPaise,
-        'shareRate': shareRate,
-        'calculatedSharePaise': calculatedSharePaise,
-        'note': note,
-        'createdAt': createdAt.toIso8601String(),
-      };
+    'id': id,
+    'creatorId': creatorId,
+    'sourceAmountPaise': sourceAmountPaise,
+    'shareRate': shareRate,
+    'calculatedSharePaise': calculatedSharePaise,
+    'note': note,
+    'createdAt': createdAt.toIso8601String(),
+  };
 
   factory RevenueShareRecord.fromJson(Map<String, dynamic> json) =>
       RevenueShareRecord(

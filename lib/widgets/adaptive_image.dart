@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 class AdaptiveImage extends StatelessWidget {
@@ -8,12 +9,12 @@ class AdaptiveImage extends StatelessWidget {
   final BoxFit fit;
 
   const AdaptiveImage({
-    Key? key,
+    super.key,
     required this.imagePath,
     this.width,
     this.height,
     this.fit = BoxFit.cover,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +26,8 @@ class AdaptiveImage extends StatelessWidget {
         fit: fit,
         errorBuilder: (context, error, stackTrace) => _buildError(),
       );
-    } else if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    } else if (imagePath.startsWith('http://') ||
+        imagePath.startsWith('https://')) {
       return Image.network(
         imagePath,
         width: width,

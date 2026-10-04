@@ -19,7 +19,7 @@ void main() {
       await repo.init();
       final post = repo.getPosts().first;
       final initialClicks = post.productClicksCount;
-      
+
       await repo.recordProductClick(post.id, 'some_product', post.creatorId);
       final updatedPost = repo.getPostById(post.id);
       expect(updatedPost?.productClicksCount, equals(initialClicks));

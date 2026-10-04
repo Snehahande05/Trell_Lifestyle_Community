@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'providers/app_state_provider.dart';
 import 'repositories/app_repository.dart';
 import 'models/user.dart';
@@ -49,7 +50,8 @@ class MainNavigationContainer extends StatefulWidget {
   const MainNavigationContainer({super.key});
 
   @override
-  State<MainNavigationContainer> createState() => _MainNavigationContainerState();
+  State<MainNavigationContainer> createState() =>
+      _MainNavigationContainerState();
 }
 
 class _MainNavigationContainerState extends State<MainNavigationContainer> {
@@ -70,10 +72,7 @@ class _MainNavigationContainerState extends State<MainNavigationContainer> {
     final user = provider.currentUser;
 
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {

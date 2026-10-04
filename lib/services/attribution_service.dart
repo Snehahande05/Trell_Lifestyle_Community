@@ -43,7 +43,9 @@ class AttributionService {
 
       // Fallback custom pattern matching if simple path
       if (productId == null || creatorId == null || postId == null) {
-        final regExp = RegExp(r'productId=([^&]+)&creatorId=([^&]+)&postId=([^&]+)');
+        final regExp = RegExp(
+          r'productId=([^&]+)&creatorId=([^&]+)&postId=([^&]+)',
+        );
         final match = regExp.firstMatch(rawUrl);
         if (match != null && match.groupCount >= 3) {
           productId = match.group(1);

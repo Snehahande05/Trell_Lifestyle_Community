@@ -20,24 +20,24 @@ class Product {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'imageUrl': imageUrl,
-        'description': description,
-        'category': category,
-        'pricePaise': pricePaise,
-        'isAvailable': isAvailable,
-        'commissionRate': commissionRate,
-      };
+    'id': id,
+    'name': name,
+    'imageUrl': imageUrl,
+    'description': description,
+    'category': category,
+    'pricePaise': pricePaise,
+    'isAvailable': isAvailable,
+    'commissionRate': commissionRate,
+  };
 
   factory Product.fromJson(Map<String, dynamic> json) => Product(
-        id: json['id'],
-        name: json['name'],
-        imageUrl: json['imageUrl'],
-        description: json['description'],
-        category: json['category'],
-        pricePaise: json['pricePaise'],
-        isAvailable: json['isAvailable'] ?? true,
-        commissionRate: (json['commissionRate'] as num).toDouble(),
-      );
+    id: json['id'],
+    name: json['name'],
+    imageUrl: json['imageUrl'],
+    description: json['description'],
+    category: json['category'],
+    pricePaise: json['pricePaise'],
+    isAvailable: json['isAvailable'] ?? true,
+    commissionRate: (json['commissionRate'] as num).toDouble(),
+  );
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+
 import '../models/user.dart';
 import '../models/product.dart';
 import '../models/post.dart';
@@ -73,7 +74,11 @@ class AppStateProvider extends ChangeNotifier {
   List<Post> get feedPosts {
     List<Post> posts = repository.getPosts();
     if (_selectedCategory != 'All') {
-      posts = posts.where((p) => p.category.toLowerCase() == _selectedCategory.toLowerCase()).toList();
+      posts = posts
+          .where(
+            (p) => p.category.toLowerCase() == _selectedCategory.toLowerCase(),
+          )
+          .toList();
     }
     return posts;
   }
@@ -84,8 +89,7 @@ class AppStateProvider extends ChangeNotifier {
   int get cartTotalPaise =>
       userCart.fold(0, (sum, item) => sum + item.totalPaise);
 
-  int get cartItemCount =>
-      userCart.fold(0, (sum, item) => sum + item.quantity);
+  int get cartItemCount => userCart.fold(0, (sum, item) => sum + item.quantity);
 
   List<Order> get userOrders =>
       _currentUser != null ? repository.getOrdersForUser(_currentUser!.id) : [];
@@ -115,7 +119,10 @@ class AppStateProvider extends ChangeNotifier {
 
   Future<void> registerPostView(String postId) async {
     if (_currentUser == null) return;
-    bool incremented = await repository.incrementPostViews(postId, _currentUser!.id);
+    bool incremented = await repository.incrementPostViews(
+      postId,
+      _currentUser!.id,
+    );
     if (incremented) {
       notifyListeners();
     }
@@ -149,21 +156,45 @@ class AppStateProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addToCart(Product product, {String? creatorId, String? postId}) async {
+  Future<void> addToCart(
+    Product product, {
+    String? creatorId,
+    String? postId,
+  }) async {
     if (_currentUser == null) return;
     await repository.addToCart(_currentUser!.id, product, creatorId, postId);
     notifyListeners();
   }
 
-  Future<void> updateCartQuantity(String productId, String? creatorId, String? postId, int quantity) async {
+  Future<void> updateCartQuantity(
+    String productId,
+    String? creatorId,
+    String? postId,
+    int quantity,
+  ) async {
     if (_currentUser == null) return;
-    await repository.updateCartQuantity(_currentUser!.id, productId, creatorId, postId, quantity);
+    await repository.updateCartQuantity(
+      _currentUser!.id,
+      productId,
+      creatorId,
+      postId,
+      quantity,
+    );
     notifyListeners();
   }
 
-  Future<void> removeFromCart(String productId, String? creatorId, String? postId) async {
+  Future<void> removeFromCart(
+    String productId,
+    String? creatorId,
+    String? postId,
+  ) async {
     if (_currentUser == null) return;
-    await repository.removeFromCart(_currentUser!.id, productId, creatorId, postId);
+    await repository.removeFromCart(
+      _currentUser!.id,
+      productId,
+      creatorId,
+      postId,
+    );
     notifyListeners();
   }
 
@@ -175,7 +206,8 @@ class AppStateProvider extends ChangeNotifier {
 
     // Generate a stable idempotency key for this checkout session if not already set.
     // This prevents duplicate orders from double-taps or retries within the same checkout.
-    _activeCheckoutKey ??= 'idem_${_currentUser!.id}_${DateTime.now().millisecondsSinceEpoch}';
+    _activeCheckoutKey ??=
+        'idem_${_currentUser!.id}_${DateTime.now().millisecondsSinceEpoch}';
     final idemKey = _activeCheckoutKey!;
 
     Order order = await repository.createOrder(
@@ -208,8 +240,7 @@ class AppStateProvider extends ChangeNotifier {
     // Re-evaluate review badges for all products in this order, because
     // completion enables the badge and refund/cancellation removes it.
     try {
-      final order = repository.getOrders()
-          .firstWhere((o) => o.id == orderId);
+      final order = repository.getOrders().firstWhere((o) => o.id == orderId);
       for (final item in order.items) {
         await repository.reEvaluateReviewBadges(item.productId);
       }
@@ -236,25 +267,39 @@ class AppStateProvider extends ChangeNotifier {
   //   NOTE: This is local demo analytics only. Counts are stored in local SharedPreferences.
   // ──────────────────────────────────────────────────────────────────────────
   Map<String, dynamic> getCreatorAnalytics(String creatorId) {
-    List<Post> creatorPosts = repository.getPosts().where((p) => p.creatorId == creatorId).toList();
+    List<Post> creatorPosts = repository
+        .getPosts()
+        .where((p) => p.creatorId == creatorId)
+        .toList();
     User? creatorUser = repository.getUserById(creatorId);
 
     int totalViews = creatorPosts.fold(0, (sum, p) => sum + p.viewsCount);
-    int totalLikes = creatorPosts.fold(0, (sum, p) => sum + p.likedUserIds.length);
-    int totalComments = creatorPosts.fold(0, (sum, p) => sum + p.comments.length);
+    int totalLikes = creatorPosts.fold(
+      0,
+      (sum, p) => sum + p.likedUserIds.length,
+    );
+    int totalComments = creatorPosts.fold(
+      0,
+      (sum, p) => sum + p.comments.length,
+    );
     int totalShares = creatorPosts.fold(0, (sum, p) => sum + p.sharesCount);
-    int totalClicks = creatorPosts.fold(0, (sum, p) => sum + p.productClicksCount);
+    int totalClicks = creatorPosts.fold(
+      0,
+      (sum, p) => sum + p.productClicksCount,
+    );
 
     // Attributed orders & conversion calculations
     List<Order> allOrdersList = repository.getOrders();
     int unitsSold = 0;
-    int attributedOrderCount = 0; // Unique PAID/COMPLETED orders with creator attribution
+    int attributedOrderCount =
+        0; // Unique PAID/COMPLETED orders with creator attribution
     int salesValuePaise = 0;
 
     Set<String> countedOrders = {};
     for (var order in allOrdersList) {
       // Only count paid or completed orders (not refunded/cancelled)
-      if (order.status == OrderStatus.paid || order.status == OrderStatus.completed) {
+      if (order.status == OrderStatus.paid ||
+          order.status == OrderStatus.completed) {
         bool orderHasCreatorItem = false;
         for (var item in order.items) {
           if (item.referrerCreatorId == creatorId) {
@@ -283,7 +328,9 @@ class AppStateProvider extends ChangeNotifier {
     // ─── Financial Ledger (Step 7 corrected) ─────────────────────────────────
     // RECONCILIATION EQUATION:
     //   gross_commission - reversals = pending + available + reserved + net_cash_paid - recovery_due
-    List<CommissionTransaction> comms = repository.getCommissionsForCreator(creatorId);
+    List<CommissionTransaction> comms = repository.getCommissionsForCreator(
+      creatorId,
+    );
 
     int pendingCommissionPaise = comms
         .where((c) => c.status == CommissionStatus.pending)
@@ -307,27 +354,31 @@ class AppStateProvider extends ChangeNotifier {
     int recoveryDuePaise = clawbackDue.abs(); // Expressed as positive debt
 
     // Gross commission = all non-clawback positive commission amounts
-    int grossCommissionPaise = pendingCommissionPaise +
+    int grossCommissionPaise =
+        pendingCommissionPaise +
         availableCommissionPaise +
         reservedCommissionPaise +
         paidOutCommissionPaise +
         reversedCommissionPaise;
 
-    // Net cash paid = paidOut - any actual recovered clawbacks (currently we don't 
+    // Net cash paid = paidOut - any actual recovered clawbacks (currently we don't
     // auto-recover; recovery happens from future earnings, tracked separately).
     int netCashPaidPaise = paidOutCommissionPaise;
 
     // Spendable = available - any pending withdrawal requests (to prevent double-spending)
-    int pendingWithdrawalReservations = repository.getWithdrawalRequestsForCreator(creatorId)
+    int pendingWithdrawalReservations = repository
+        .getWithdrawalRequestsForCreator(creatorId)
         .where((w) => w.status == WithdrawalStatus.pending)
         .fold(0, (sum, w) => sum + w.amountPaise);
     // Note: with reservation model, reserved commissions have already moved to reserved status,
     // so pendingWithdrawalReservations should be 0 under normal flow. Kept for safety.
-    int spendableBalancePaise = availableCommissionPaise - pendingWithdrawalReservations;
+    int spendableBalancePaise =
+        availableCommissionPaise - pendingWithdrawalReservations;
 
     // Lifetime earnings must NOT double-count:
     // = gross - reversals = pending + available + reserved + paidOut
-    int lifetimeEarningsPaise = pendingCommissionPaise +
+    int lifetimeEarningsPaise =
+        pendingCommissionPaise +
         availableCommissionPaise +
         reservedCommissionPaise +
         paidOutCommissionPaise;
@@ -343,7 +394,8 @@ class AppStateProvider extends ChangeNotifier {
       'comments': totalComments,
       'shares': totalShares,
       'clicks': totalClicks,
-      'attributedConversions': attributedOrderCount, // Unique attributed order count
+      'attributedConversions':
+          attributedOrderCount, // Unique attributed order count
       'unitsSold': unitsSold,
       'salesValuePaise': salesValuePaise,
       // Ledger breakdowns
@@ -365,14 +417,21 @@ class AppStateProvider extends ChangeNotifier {
 
   // Wallet
   List<CommissionTransaction> get currentCreatorCommissions =>
-      _currentUser != null ? repository.getCommissionsForCreator(_currentUser!.id) : [];
+      _currentUser != null
+      ? repository.getCommissionsForCreator(_currentUser!.id)
+      : [];
 
-  List<WithdrawalRequest> get currentCreatorWithdrawals =>
-      _currentUser != null ? repository.getWithdrawalRequestsForCreator(_currentUser!.id) : [];
+  List<WithdrawalRequest> get currentCreatorWithdrawals => _currentUser != null
+      ? repository.getWithdrawalRequestsForCreator(_currentUser!.id)
+      : [];
 
-  List<WithdrawalRequest> get allWithdrawalRequests => repository.getWithdrawalRequests();
+  List<WithdrawalRequest> get allWithdrawalRequests =>
+      repository.getWithdrawalRequests();
 
-  Future<WithdrawalRequest?> requestWithdrawal(int amountPaise, String upiOrBank) async {
+  Future<WithdrawalRequest?> requestWithdrawal(
+    int amountPaise,
+    String upiOrBank,
+  ) async {
     if (_currentUser == null) return null;
     WithdrawalRequest? req = await repository.requestWithdrawal(
       _currentUser!.id,
@@ -384,16 +443,26 @@ class AppStateProvider extends ChangeNotifier {
     return req;
   }
 
-  Future<void> processWithdrawal(String requestId, bool approve, {String? reason}) async {
+  Future<void> processWithdrawal(
+    String requestId,
+    bool approve, {
+    String? reason,
+  }) async {
     await repository.processWithdrawal(requestId, approve, reason: reason);
     notifyListeners();
   }
 
   // Revenue Share
-  List<RevenueShareRecord> get currentCreatorRevShares =>
-      _currentUser != null ? repository.getRevenueShareRecordsForCreator(_currentUser!.id) : [];
+  List<RevenueShareRecord> get currentCreatorRevShares => _currentUser != null
+      ? repository.getRevenueShareRecordsForCreator(_currentUser!.id)
+      : [];
 
-  Future<void> recordRevenueShare(String creatorId, int sourcePaise, double rate, String note) async {
+  Future<void> recordRevenueShare(
+    String creatorId,
+    int sourcePaise,
+    double rate,
+    String note,
+  ) async {
     await repository.recordRevenueShare(creatorId, sourcePaise, rate, note);
     notifyListeners();
   }
@@ -424,10 +493,9 @@ class AppStateProvider extends ChangeNotifier {
     return record;
   }
 
-  List<PromotionRecord> get currentCreatorPromotions =>
-      _currentUser != null
-          ? repository.getPromotionsForCreator(_currentUser!.id)
-          : [];
+  List<PromotionRecord> get currentCreatorPromotions => _currentUser != null
+      ? repository.getPromotionsForCreator(_currentUser!.id)
+      : [];
 
   List<PromotionRecord> get allPromotions => repository.getAllPromotions();
 
@@ -435,7 +503,11 @@ class AppStateProvider extends ChangeNotifier {
   List<ProductReview> getReviewsForProduct(String productId) =>
       repository.getReviewsForProduct(productId);
 
-  Future<void> addProductReview(String productId, double rating, String comment) async {
+  Future<void> addProductReview(
+    String productId,
+    double rating,
+    String comment,
+  ) async {
     if (_currentUser == null) return;
     await repository.addProductReview(
       productId,
@@ -449,12 +521,18 @@ class AppStateProvider extends ChangeNotifier {
   }
 
   VerificationApplication? get currentCreatorVerification =>
-      _currentUser != null ? repository.getVerificationForCreator(_currentUser!.id) : null;
+      _currentUser != null
+      ? repository.getVerificationForCreator(_currentUser!.id)
+      : null;
 
   List<VerificationApplication> get allVerificationApplications =>
       repository.getVerificationApplications();
 
-  Future<void> submitVerification(String category, String socialLink, String reason) async {
+  Future<void> submitVerification(
+    String category,
+    String socialLink,
+    String reason,
+  ) async {
     if (_currentUser == null) return;
     await repository.submitVerification(
       _currentUser!.id,
@@ -466,7 +544,11 @@ class AppStateProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> processVerification(String appId, bool approve, {String? rejectionReason}) async {
+  Future<void> processVerification(
+    String appId,
+    bool approve, {
+    String? rejectionReason,
+  }) async {
     if (_currentUser == null) return;
     await repository.processVerification(
       appId,

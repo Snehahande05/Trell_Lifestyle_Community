@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/app_state_provider.dart';
-import '../models/product.dart';
-import '../models/post.dart';
 import '../models/user.dart';
 import '../utils/currency_utils.dart';
 import '../services/attribution_service.dart';
@@ -22,7 +21,10 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
 
-  void _showImportReferralDialog(BuildContext context, AppStateProvider provider) {
+  void _showImportReferralDialog(
+    BuildContext context,
+    AppStateProvider provider,
+  ) {
     final linkController = TextEditingController(
       text: 'https://trell.app/ref?productId=p_2&creatorId=u_creator1&postId=post_1',
     );
@@ -66,7 +68,10 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white54),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.pinkAccent),
@@ -77,7 +82,9 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
               if (parsed == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('❌ Malformed referral URL. Must include productId, creatorId, and postId.'),
+                    content: Text(
+                      '❌ Malformed referral URL. Must include productId, creatorId, and postId.',
+                    ),
                     backgroundColor: Colors.redAccent,
                   ),
                 );
@@ -94,14 +101,18 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
               if (!isValid) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('❌ Invalid Referral Link: Product, creator, or tagged post relationship validation failed. Attribution rejected.'),
+                    content: Text(
+                      '❌ Invalid Referral Link: Product, creator, or tagged post relationship validation failed. Attribution rejected.',
+                    ),
                     backgroundColor: Colors.redAccent,
                   ),
                 );
                 return;
               }
 
-              final product = provider.repository.getProductById(parsed.productId);
+              final product = provider.repository.getProductById(
+                parsed.productId,
+              );
               if (product == null) return;
 
               // Record valid click and navigate
@@ -119,7 +130,10 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
                 ),
               );
             },
-            child: const Text('Open & Validate', style: TextStyle(color: Colors.white)),
+            child: const Text(
+              'Open & Validate',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -158,7 +172,8 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
 
     final filteredCreators = provider.allUsers.where((u) {
       return u.role == UserRole.creator &&
-          (u.name.toLowerCase().contains(query) || u.username.toLowerCase().contains(query));
+          (u.name.toLowerCase().contains(query) ||
+              u.username.toLowerCase().contains(query));
     }).toList();
 
     return Scaffold(
@@ -216,7 +231,10 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
           // 1. Products Grid
           filteredProducts.isEmpty
               ? const Center(
-                  child: Text('No products found', style: TextStyle(color: Colors.white54)),
+                  child: Text(
+                    'No products found',
+                    style: TextStyle(color: Colors.white54),
+                  ),
                 )
               : GridView.builder(
                   padding: const EdgeInsets.all(12),
@@ -234,7 +252,8 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => ProductDetailScreen(product: product),
+                            builder: (_) =>
+                                ProductDetailScreen(product: product),
                           ),
                         );
                       },
@@ -249,15 +268,19 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
                           children: [
                             Expanded(
                               child: ClipRRect(
-                                borderRadius:
-                                    const BorderRadius.vertical(top: Radius.circular(12)),
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(12),
+                                ),
                                 child: Image.network(
                                   product.imageUrl,
                                   width: double.infinity,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Container(
+                                  errorBuilder: (_, _, _) => Container(
                                     color: Colors.grey.shade800,
-                                    child: const Icon(Icons.shopping_bag, color: Colors.white),
+                                    child: const Icon(
+                                      Icons.shopping_bag,
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -279,10 +302,13 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
                                   ),
                                   const SizedBox(height: 4),
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        CurrencyUtils.formatPaise(product.pricePaise),
+                                        CurrencyUtils.formatPaise(
+                                          product.pricePaise,
+                                        ),
                                         style: const TextStyle(
                                           color: Colors.pinkAccent,
                                           fontWeight: FontWeight.bold,
@@ -290,10 +316,14 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
                                       ),
                                       Container(
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 6, vertical: 2),
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
                                         decoration: BoxDecoration(
                                           color: Colors.green.shade900,
-                                          borderRadius: BorderRadius.circular(4),
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
                                         ),
                                         child: Text(
                                           '${(product.commissionRate * 100).toInt()}% Comm',
@@ -319,7 +349,10 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
           // 2. Posts List
           filteredPosts.isEmpty
               ? const Center(
-                  child: Text('No posts found', style: TextStyle(color: Colors.white54)),
+                  child: Text(
+                    'No posts found',
+                    style: TextStyle(color: Colors.white54),
+                  ),
                 )
               : ListView.builder(
                   padding: const EdgeInsets.all(12),
@@ -337,13 +370,22 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
                           post.caption,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         subtitle: Text(
                           '@${post.creatorName} • ${post.category}',
-                          style: const TextStyle(color: Colors.white54, fontSize: 12),
+                          style: const TextStyle(
+                            color: Colors.white54,
+                            fontSize: 12,
+                          ),
                         ),
-                        trailing: const Icon(Icons.play_circle_fill, color: Colors.pinkAccent),
+                        trailing: const Icon(
+                          Icons.play_circle_fill,
+                          color: Colors.pinkAccent,
+                        ),
                         onTap: () {
                           // Preview post in bottom sheet video player
                           showModalBottomSheet(
@@ -352,7 +394,10 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
                             backgroundColor: Colors.black,
                             builder: (_) => SizedBox(
                               height: MediaQuery.of(context).size.height * 0.9,
-                              child: ShortVideoPlayerItem(post: post, isSelected: true),
+                              child: ShortVideoPlayerItem(
+                                post: post,
+                                isSelected: true,
+                              ),
                             ),
                           );
                         },
@@ -364,7 +409,10 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
           // 3. Creators List
           filteredCreators.isEmpty
               ? const Center(
-                  child: Text('No creators found', style: TextStyle(color: Colors.white54)),
+                  child: Text(
+                    'No creators found',
+                    style: TextStyle(color: Colors.white54),
+                  ),
                 )
               : ListView.builder(
                   padding: const EdgeInsets.all(12),
@@ -391,17 +439,26 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
                             ),
                             if (creator.isVerifiedCreator) ...[
                               const SizedBox(width: 4),
-                              const Icon(Icons.verified, color: Colors.blueAccent, size: 16),
+                              const Icon(
+                                Icons.verified,
+                                color: Colors.blueAccent,
+                                size: 16,
+                              ),
                             ],
                           ],
                         ),
                         subtitle: Text(
                           '@${creator.username} • ${creator.followerCount} followers\n${creator.bio ?? ""}',
-                          style: const TextStyle(color: Colors.white54, fontSize: 12),
+                          style: const TextStyle(
+                            color: Colors.white54,
+                            fontSize: 12,
+                          ),
                         ),
                         trailing: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: isFollowing ? Colors.grey.shade800 : Colors.pinkAccent,
+                            backgroundColor: isFollowing
+                                ? Colors.grey.shade800
+                                : Colors.pinkAccent,
                           ),
                           onPressed: () {
                             provider.toggleFollow(creator.id);

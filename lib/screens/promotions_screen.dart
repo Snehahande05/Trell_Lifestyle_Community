@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/app_state_provider.dart';
 import '../models/promotion.dart';
 import '../utils/currency_utils.dart';
@@ -57,18 +58,28 @@ class _PromotionsScreenState extends State<PromotionsScreen>
     if (user == null) {
       return const Scaffold(
         backgroundColor: Colors.black,
-        body: Center(child: Text('User not selected', style: TextStyle(color: Colors.white))),
+        body: Center(
+          child: Text(
+            'User not selected',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
       );
     }
 
-    final myPosts = provider.feedPosts.where((p) => p.creatorId == user.id).toList();
+    final myPosts = provider.feedPosts
+        .where((p) => p.creatorId == user.id)
+        .toList();
     final myPromotions = provider.currentCreatorPromotions;
 
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.grey.shade900,
-        title: const Text('Promote Featured Posts', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Promote Featured Posts',
+          style: TextStyle(color: Colors.white),
+        ),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.pinkAccent,
@@ -90,7 +101,11 @@ class _PromotionsScreenState extends State<PromotionsScreen>
     );
   }
 
-  Widget _buildPromoteTab(BuildContext context, AppStateProvider provider, List posts) {
+  Widget _buildPromoteTab(
+    BuildContext context,
+    AppStateProvider provider,
+    List posts,
+  ) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -100,7 +115,9 @@ class _PromotionsScreenState extends State<PromotionsScreen>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [Colors.amber, Colors.deepOrange]),
+              gradient: const LinearGradient(
+                colors: [Colors.amber, Colors.deepOrange],
+              ),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -110,13 +127,24 @@ class _PromotionsScreenState extends State<PromotionsScreen>
                   children: [
                     Icon(Icons.star, color: Colors.white, size: 24),
                     SizedBox(width: 8),
-                    Text('Entry Promotion Package', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                    Text(
+                      'Entry Promotion Package',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Price: ${CurrencyUtils.formatPaise(_packagePricePaise)} for $_packageDurationDays Days Featured Placement',
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 const Text(
@@ -131,46 +159,72 @@ class _PromotionsScreenState extends State<PromotionsScreen>
           const SizedBox(height: 24),
 
           // ── Post selector ───────────────────────────────────────────────────
-          const Text('Select Your Post to Promote:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+          const Text(
+            'Select Your Post to Promote:',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
           const SizedBox(height: 12),
           posts.isEmpty
-              ? const Text('You have not published any posts yet.', style: TextStyle(color: Colors.white54))
-              : Column(
-                  children: (posts as List).map((post) {
-                    final now = DateTime.now().toUtc();
-                    final isActive = post.isPromoted &&
-                        post.promotionExpiry != null &&
-                        post.promotionExpiry!.isAfter(now);
-                    final isSelected = _selectedPostId == post.id;
-                    return Card(
-                      color: isSelected ? Colors.purple.shade900 : Colors.grey.shade900,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: isSelected ? Colors.pinkAccent : Colors.transparent),
-                      ),
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: ListTile(
-                        title: Text(
-                          post.caption,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ? const Text(
+                  'You have not published any posts yet.',
+                  style: TextStyle(color: Colors.white54),
+                )
+              : RadioGroup<String>(
+                  groupValue: _selectedPostId,
+                  onChanged: (value) => setState(() => _selectedPostId = value),
+                  child: Column(
+                    children: posts.map((post) {
+                      final now = DateTime.now().toUtc();
+                      final isActive =
+                          post.isPromoted &&
+                          post.promotionExpiry != null &&
+                          post.promotionExpiry!.isAfter(now);
+                      final isSelected = _selectedPostId == post.id;
+                      return Card(
+                        color: isSelected
+                            ? Colors.purple.shade900
+                            : Colors.grey.shade900,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: isSelected
+                                ? Colors.pinkAccent
+                                : Colors.transparent,
+                          ),
                         ),
-                        subtitle: Text(
-                          'Category: ${post.category} • Views: ${post.viewsCount}\n'
-                          '${isActive ? "🔥 Promoted — expires ${_formatExpiry(post.promotionExpiry!)}" : "Not promoted"}',
-                          style: TextStyle(color: isActive ? Colors.amber : Colors.white54, fontSize: 12),
+                        margin: const EdgeInsets.only(bottom: 12),
+                        child: ListTile(
+                          title: Text(
+                            post.caption,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          subtitle: Text(
+                            'Category: ${post.category} • Views: ${post.viewsCount}\n'
+                            '${isActive ? "🔥 Promoted — expires ${_formatExpiry(post.promotionExpiry!)}" : "Not promoted"}',
+                            style: TextStyle(
+                              color: isActive ? Colors.amber : Colors.white54,
+                              fontSize: 12,
+                            ),
+                          ),
+                          trailing: Radio<String>(
+                            value: post.id,
+                            activeColor: Colors.pinkAccent,
+                          ),
+                          onTap: () =>
+                              setState(() => _selectedPostId = post.id),
                         ),
-                        trailing: Radio<String>(
-                          value: post.id,
-                          groupValue: _selectedPostId,
-                          activeColor: Colors.pinkAccent,
-                          onChanged: (val) => setState(() => _selectedPostId = val),
-                        ),
-                        onTap: () => setState(() => _selectedPostId = post.id),
-                      ),
-                    );
-                  }).toList(),
+                      );
+                    }).toList(),
+                  ),
                 ),
           const SizedBox(height: 24),
 
@@ -187,7 +241,8 @@ class _PromotionsScreenState extends State<PromotionsScreen>
       orElse: () => provider.feedPosts.first,
     );
     final now = DateTime.now().toUtc();
-    final isActivePromotion = post.isPromoted &&
+    final isActivePromotion =
+        post.isPromoted &&
         post.promotionExpiry != null &&
         post.promotionExpiry!.isAfter(now);
 
@@ -221,26 +276,46 @@ class _PromotionsScreenState extends State<PromotionsScreen>
       height: 50,
       child: ElevatedButton.icon(
         style: ElevatedButton.styleFrom(backgroundColor: Colors.pinkAccent),
-        onPressed: _isProcessing ? null : () => _handlePromotionPayment(context, provider),
+        onPressed: _isProcessing
+            ? null
+            : () => _handlePromotionPayment(context, provider),
         icon: _isProcessing
-            ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
             : const Icon(Icons.flash_on, color: Colors.white),
         label: Text(
-          _isProcessing ? 'Processing...' : 'Pay ${CurrencyUtils.formatPaise(_packagePricePaise)} & Promote',
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+          _isProcessing
+              ? 'Processing...'
+              : 'Pay ${CurrencyUtils.formatPaise(_packagePricePaise)} & Promote',
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
         ),
       ),
     );
   }
 
-  Future<void> _handlePromotionPayment(BuildContext context, AppStateProvider provider) async {
+  Future<void> _handlePromotionPayment(
+    BuildContext context,
+    AppStateProvider provider,
+  ) async {
     if (_selectedPostId == null || _isProcessing) return;
     setState(() => _isProcessing = true);
 
     try {
       // Generate a stable idempotency key for this payment attempt
-      final attemptKey = 'promo_${_selectedPostId}_${DateTime.now().millisecondsSinceEpoch}';
+      final attemptKey =
+          'promo_${_selectedPostId}_${DateTime.now().millisecondsSinceEpoch}';
 
+      final messenger = ScaffoldMessenger.of(context);
       // Show demo outcome dialog
       if (!mounted) return;
       final outcome = await showDialog<String>(
@@ -248,21 +323,34 @@ class _PromotionsScreenState extends State<PromotionsScreen>
         barrierDismissible: false,
         builder: (dialogCtx) => AlertDialog(
           backgroundColor: Colors.grey.shade900,
-          title: const Text('Simulated Promotion Payment', style: TextStyle(color: Colors.white)),
+          title: const Text(
+            'Simulated Promotion Payment',
+            style: TextStyle(color: Colors.white),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Package: $_packageLabel', style: const TextStyle(color: Colors.white70)),
+              Text(
+                'Package: $_packageLabel',
+                style: const TextStyle(color: Colors.white70),
+              ),
               const SizedBox(height: 6),
               Text(
                 'Cost: ${CurrencyUtils.formatPaise(_packagePricePaise)}',
-                style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  color: Colors.amber,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 12),
               const Text(
                 'Demo promotion payment — no real money is charged.',
-                style: TextStyle(color: Colors.white54, fontSize: 12, fontStyle: FontStyle.italic),
+                style: TextStyle(
+                  color: Colors.white54,
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                ),
               ),
               const SizedBox(height: 4),
               const Text(
@@ -274,17 +362,28 @@ class _PromotionsScreenState extends State<PromotionsScreen>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogCtx, 'cancel'),
-              child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.white54),
+              ),
             ),
             OutlinedButton(
-              style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.redAccent)),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.redAccent),
+              ),
               onPressed: () => Navigator.pop(dialogCtx, 'fail'),
-              child: const Text('Simulate Failure', style: TextStyle(color: Colors.redAccent)),
+              child: const Text(
+                'Simulate Failure',
+                style: TextStyle(color: Colors.redAccent),
+              ),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
               onPressed: () => Navigator.pop(dialogCtx, 'success'),
-              child: const Text('Simulate Success', style: TextStyle(color: Colors.white)),
+              child: const Text(
+                'Simulate Success',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         ),
@@ -301,9 +400,11 @@ class _PromotionsScreenState extends State<PromotionsScreen>
           failureReason: null, // null = cancelled (not failed)
         );
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          messenger.showSnackBar(
             const SnackBar(
-              content: Text('Promotion payment cancelled. Post was not promoted.'),
+              content: Text(
+                'Promotion payment cancelled. Post was not promoted.',
+              ),
               backgroundColor: Colors.orange,
             ),
           );
@@ -319,9 +420,11 @@ class _PromotionsScreenState extends State<PromotionsScreen>
           failureReason: 'Simulated payment failure',
         );
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          messenger.showSnackBar(
             const SnackBar(
-              content: Text('Payment failed. Post was not promoted. You may try again.'),
+              content: Text(
+                'Payment failed. Post was not promoted. You may try again.',
+              ),
               backgroundColor: Colors.red,
             ),
           );
@@ -336,9 +439,11 @@ class _PromotionsScreenState extends State<PromotionsScreen>
         simulateSuccess: true,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           const SnackBar(
-            content: Text('🎉 Demo Promotion Successful! Post featured for $_packageDurationDays days.'),
+            content: Text(
+              '🎉 Demo Promotion Successful! Post featured for $_packageDurationDays days.',
+            ),
             backgroundColor: Colors.green,
           ),
         );
@@ -357,7 +462,10 @@ class _PromotionsScreenState extends State<PromotionsScreen>
           children: [
             Icon(Icons.history, size: 48, color: Colors.white38),
             SizedBox(height: 12),
-            Text('No promotion history yet.', style: TextStyle(color: Colors.white54)),
+            Text(
+              'No promotion history yet.',
+              style: TextStyle(color: Colors.white54),
+            ),
           ],
         ),
       );
@@ -410,21 +518,37 @@ class _PromotionsScreenState extends State<PromotionsScreen>
                   children: [
                     Text(
                       '${CurrencyUtils.formatPaise(promo.packagePricePaise)} — ${promo.durationDays}-Day Package',
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: statusColor.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: statusColor),
                       ),
-                      child: Text(statusLabel, style: TextStyle(color: statusColor, fontSize: 12, fontWeight: FontWeight.bold)),
+                      child: Text(
+                        statusLabel,
+                        style: TextStyle(
+                          color: statusColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 6),
-                Text('Post ID: ${promo.postId}', style: const TextStyle(color: Colors.white60, fontSize: 12)),
+                Text(
+                  'Post ID: ${promo.postId}',
+                  style: const TextStyle(color: Colors.white60, fontSize: 12),
+                ),
                 Text(
                   'Attempted: ${promo.createdAt.toLocal().toString().substring(0, 16)}',
                   style: const TextStyle(color: Colors.white38, fontSize: 11),
@@ -434,11 +558,11 @@ class _PromotionsScreenState extends State<PromotionsScreen>
                     'Activated: ${promo.activationTime!.toLocal().toString().substring(0, 16)}',
                     style: const TextStyle(color: Colors.white54, fontSize: 11),
                   ),
-                if (promo.expiryTime != null) ...[ 
+                if (promo.expiryTime != null) ...[
                   Text(
                     isActive
                         ? 'Expires: ${promo.expiryTime!.toLocal().toString().substring(0, 16)} '
-                            '(${_remainingDuration(now, promo.expiryTime!)} remaining)'
+                              '(${_remainingDuration(now, promo.expiryTime!)} remaining)'
                         : 'Expired: ${promo.expiryTime!.toLocal().toString().substring(0, 16)}',
                     style: TextStyle(
                       color: isActive ? Colors.greenAccent : Colors.white38,
@@ -449,14 +573,22 @@ class _PromotionsScreenState extends State<PromotionsScreen>
                 if (promo.failureReason != null)
                   Text(
                     'Reason: ${promo.failureReason}',
-                    style: const TextStyle(color: Colors.redAccent, fontSize: 11),
+                    style: const TextStyle(
+                      color: Colors.redAccent,
+                      fontSize: 11,
+                    ),
                   ),
                 const SizedBox(height: 4),
                 // Distinguish payment state from promotion state clearly
-                if (promo.paymentStatus == PromotionPaymentStatus.success && isExpired)
+                if (promo.paymentStatus == PromotionPaymentStatus.success &&
+                    isExpired)
                   const Text(
                     'Payment was successful — promotion window has since expired.',
-                    style: TextStyle(color: Colors.white38, fontSize: 11, fontStyle: FontStyle.italic),
+                    style: TextStyle(
+                      color: Colors.white38,
+                      fontSize: 11,
+                      fontStyle: FontStyle.italic,
+                    ),
                   ),
               ],
             ),

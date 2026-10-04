@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/app_state_provider.dart';
 import '../utils/currency_utils.dart';
 import 'cart_screen.dart';
@@ -17,7 +18,12 @@ class UserProfileScreen extends StatelessWidget {
     if (user == null) {
       return const Scaffold(
         backgroundColor: Colors.black,
-        body: Center(child: Text('User not logged in', style: TextStyle(color: Colors.white))),
+        body: Center(
+          child: Text(
+            'User not logged in',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
       );
     }
 
@@ -45,17 +51,29 @@ class UserProfileScreen extends StatelessWidget {
               children: [
                 Text(
                   user.name,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  ),
                 ),
                 if (user.isVerifiedCreator) ...[
                   const SizedBox(width: 6),
-                  const Icon(Icons.verified, color: Colors.blueAccent, size: 20),
+                  const Icon(
+                    Icons.verified,
+                    color: Colors.blueAccent,
+                    size: 20,
+                  ),
                 ],
               ],
             ),
             Text(
               '@${user.username} • Role: ${user.role.name.toUpperCase()}',
-              style: const TextStyle(color: Colors.pinkAccent, fontSize: 13, fontWeight: FontWeight.w600),
+              style: const TextStyle(
+                color: Colors.pinkAccent,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             if (user.bio != null) ...[
               const SizedBox(height: 6),
@@ -69,33 +87,73 @@ class UserProfileScreen extends StatelessWidget {
             // Profile Actions List
             Card(
               color: Colors.grey.shade900,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Column(
                 children: [
                   ListTile(
-                    leading: const Icon(Icons.shopping_cart, color: Colors.pinkAccent),
-                    title: const Text('My Shopping Cart', style: TextStyle(color: Colors.white)),
-                    trailing: Text('${provider.cartItemCount} items', style: const TextStyle(color: Colors.white54)),
+                    leading: const Icon(
+                      Icons.shopping_cart,
+                      color: Colors.pinkAccent,
+                    ),
+                    title: const Text(
+                      'My Shopping Cart',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    trailing: Text(
+                      '${provider.cartItemCount} items',
+                      style: const TextStyle(color: Colors.white54),
+                    ),
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const CartScreen()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const CartScreen()),
+                      );
                     },
                   ),
                   const Divider(color: Colors.white12, height: 1),
                   ListTile(
-                    leading: const Icon(Icons.receipt_long, color: Colors.amber),
-                    title: const Text('My Orders & History', style: TextStyle(color: Colors.white)),
-                    trailing: const Icon(Icons.chevron_right, color: Colors.white54),
+                    leading: const Icon(
+                      Icons.receipt_long,
+                      color: Colors.amber,
+                    ),
+                    title: const Text(
+                      'My Orders & History',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    trailing: const Icon(
+                      Icons.chevron_right,
+                      color: Colors.white54,
+                    ),
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const OrdersScreen()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const OrdersScreen()),
+                      );
                     },
                   ),
                   const Divider(color: Colors.white12, height: 1),
                   ListTile(
-                    leading: const Icon(Icons.verified_user, color: Colors.blueAccent),
-                    title: const Text('Creator Verification Badge Status', style: TextStyle(color: Colors.white)),
-                    trailing: const Icon(Icons.chevron_right, color: Colors.white54),
+                    leading: const Icon(
+                      Icons.verified_user,
+                      color: Colors.blueAccent,
+                    ),
+                    title: const Text(
+                      'Creator Verification Badge Status',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    trailing: const Icon(
+                      Icons.chevron_right,
+                      color: Colors.white54,
+                    ),
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const CreatorVerificationScreen()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const CreatorVerificationScreen(),
+                        ),
+                      );
                     },
                   ),
                 ],
@@ -107,7 +165,14 @@ class UserProfileScreen extends StatelessWidget {
             if (revShares.isNotEmpty) ...[
               const Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Verified Creator Revenue Share Records', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                child: Text(
+                  'Verified Creator Revenue Share Records',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
               ),
               const SizedBox(height: 8),
               ListView.builder(
@@ -122,11 +187,17 @@ class UserProfileScreen extends StatelessWidget {
                     child: ListTile(
                       title: Text(
                         'Earned Share: ${CurrencyUtils.formatPaise(r.calculatedSharePaise)}',
-                        style: const TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          color: Colors.greenAccent,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       subtitle: Text(
                         'Platform Budget: ${CurrencyUtils.formatPaise(r.sourceAmountPaise)} @ ${(r.shareRate * 100).toInt()}%\n${r.note}',
-                        style: const TextStyle(color: Colors.white54, fontSize: 12),
+                        style: const TextStyle(
+                          color: Colors.white54,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                   );

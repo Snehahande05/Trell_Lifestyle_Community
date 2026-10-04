@@ -1,5 +1,7 @@
 import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../models/user.dart';
 import '../models/product.dart';
 import '../models/post.dart';
@@ -31,16 +33,41 @@ abstract class AppRepositoryInterface {
   Future<void> updatePost(Post post);
   Future<bool> incrementPostViews(String postId, String viewerUserId);
   Future<void> togglePostLike(String postId, String userId);
-  Future<void> addPostComment(String postId, String userId, String userName, String text);
+  Future<void> addPostComment(
+    String postId,
+    String userId,
+    String userName,
+    String text,
+  );
   Future<void> incrementPostShares(String postId);
-  Future<void> recordProductClick(String postId, String productId, String userId);
+  Future<void> recordProductClick(
+    String postId,
+    String productId,
+    String userId,
+  );
   Future<void> promotePost(String postId, int durationDays);
 
   // Cart & Orders
   List<CartItem> getCart(String userId);
-  Future<void> addToCart(String userId, Product product, String? creatorId, String? postId);
-  Future<void> updateCartQuantity(String userId, String productId, String? creatorId, String? postId, int quantity);
-  Future<void> removeFromCart(String userId, String productId, String? creatorId, String? postId);
+  Future<void> addToCart(
+    String userId,
+    Product product,
+    String? creatorId,
+    String? postId,
+  );
+  Future<void> updateCartQuantity(
+    String userId,
+    String productId,
+    String? creatorId,
+    String? postId,
+    int quantity,
+  );
+  Future<void> removeFromCart(
+    String userId,
+    String productId,
+    String? creatorId,
+    String? postId,
+  );
   Future<void> clearCart(String userId);
 
   List<Order> getOrders();
@@ -59,30 +86,62 @@ abstract class AppRepositoryInterface {
   List<CommissionTransaction> getCommissionsForCreator(String creatorId);
   List<WithdrawalRequest> getWithdrawalRequests();
   List<WithdrawalRequest> getWithdrawalRequestsForCreator(String creatorId);
-  Future<WithdrawalRequest?> requestWithdrawal(String creatorId, String creatorName, int amountPaise, String upiIdOrBank);
-  Future<void> processWithdrawal(String requestId, bool approve, {String? reason});
-  
+  Future<WithdrawalRequest?> requestWithdrawal(
+    String creatorId,
+    String creatorName,
+    int amountPaise,
+    String upiIdOrBank,
+  );
+  Future<void> processWithdrawal(
+    String requestId,
+    bool approve, {
+    String? reason,
+  });
+
   // Revenue Share
   List<RevenueShareRecord> getRevenueShareRecordsForCreator(String creatorId);
-  Future<void> recordRevenueShare(String creatorId, int sourcePaise, double shareRate, String note);
+  Future<void> recordRevenueShare(
+    String creatorId,
+    int sourcePaise,
+    double shareRate,
+    String note,
+  );
 
   // Reviews & Verification
   List<ProductReview> getReviewsForProduct(String productId);
+
   /// Returns true iff [userId] has at least one COMPLETED (delivered),
   /// non-refunded order containing [productId]. See badge eligibility rules.
   bool hasUserPurchasedProduct(String userId, String productId);
-  Future<void> addProductReview(String productId, String userId, String userName, String avatarUrl, double rating, String comment);
+  Future<void> addProductReview(
+    String productId,
+    String userId,
+    String userName,
+    String avatarUrl,
+    double rating,
+    String comment,
+  );
+
   /// Re-evaluates all existing reviews for [productId] and updates their
   /// isVerifiedPurchase flag without deleting review text.
   Future<void> reEvaluateReviewBadges(String productId);
 
   List<VerificationApplication> getVerificationApplications();
   VerificationApplication? getVerificationForCreator(String creatorId);
-  Future<void> submitVerification(String creatorId, String creatorName, String category, String socialLink, String reason);
+  Future<void> submitVerification(
+    String creatorId,
+    String creatorName,
+    String category,
+    String socialLink,
+    String reason,
+  );
+
   /// [adminId] must be a user with UserRole.admin. [rejectionReason] is
   /// required when approve == false. Self-approval (adminId == creatorId)
   /// is rejected. Stale/repeated decisions are ignored idempotently.
-  Future<void> processVerification(String applicationId, bool approve, {
+  Future<void> processVerification(
+    String applicationId,
+    bool approve, {
     required String adminId,
     String? rejectionReason,
   });
@@ -90,6 +149,7 @@ abstract class AppRepositoryInterface {
   // Promotions (Step 10)
   List<PromotionRecord> getPromotionsForCreator(String creatorId);
   List<PromotionRecord> getAllPromotions();
+
   /// Creates or resolves an idempotent promotion payment attempt.
   /// [paymentAttemptId] is a stable caller-supplied key.
   /// Returns the existing record if the attempt was already processed.
@@ -147,17 +207,31 @@ class LocalDemoRepository implements AppRepositoryInterface {
   }
 
   Future<void> _loadFromStorage() async {
-    _users = (_decodeList(_kKeyUsers) as List).map((x) => User.fromJson(x)).toList();
-    _products = (_decodeList(_kKeyProducts) as List).map((x) => Product.fromJson(x)).toList();
-    _posts = (_decodeList(_kKeyPosts) as List).map((x) => Post.fromJson(x)).toList();
-    _orders = (_decodeList(_kKeyOrders) as List).map((x) => Order.fromJson(x)).toList();
-    _commissions = (_decodeList(_kKeyCommissions) as List).map((x) => CommissionTransaction.fromJson(x)).toList();
-    _withdrawals = (_decodeList(_kKeyWithdrawals) as List).map((x) => WithdrawalRequest.fromJson(x)).toList();
-    _revShares = (_decodeList(_kKeyRevShares) as List).map((x) => RevenueShareRecord.fromJson(x)).toList();
-    _reviews = (_decodeList(_kKeyReviews) as List).map((x) => ProductReview.fromJson(x)).toList();
-    _verifications = (_decodeList(_kKeyVerifications) as List).map((x) => VerificationApplication.fromJson(x)).toList();
+    _users = _decodeList(_kKeyUsers).map((x) => User.fromJson(x)).toList();
+    _products = _decodeList(_kKeyProducts)
+        .map((x) => Product.fromJson(x))
+        .toList();
+    _posts = _decodeList(_kKeyPosts).map((x) => Post.fromJson(x)).toList();
+    _orders = _decodeList(_kKeyOrders).map((x) => Order.fromJson(x)).toList();
+    _commissions = _decodeList(_kKeyCommissions)
+        .map((x) => CommissionTransaction.fromJson(x))
+        .toList();
+    _withdrawals = _decodeList(_kKeyWithdrawals)
+        .map((x) => WithdrawalRequest.fromJson(x))
+        .toList();
+    _revShares = _decodeList(_kKeyRevShares)
+        .map((x) => RevenueShareRecord.fromJson(x))
+        .toList();
+    _reviews = _decodeList(_kKeyReviews)
+        .map((x) => ProductReview.fromJson(x))
+        .toList();
+    _verifications = _decodeList(_kKeyVerifications)
+        .map((x) => VerificationApplication.fromJson(x))
+        .toList();
     // Backward compat: promotions key may not exist in old saves — default to []
-    _promotions = (_decodeList(_kKeyPromotions) as List).map((x) => PromotionRecord.fromJson(x)).toList();
+    _promotions = _decodeList(_kKeyPromotions)
+        .map((x) => PromotionRecord.fromJson(x))
+        .toList();
   }
 
   List<dynamic> _decodeList(String key) {
@@ -450,12 +524,24 @@ class LocalDemoRepository implements AppRepositoryInterface {
     await _saveList(_kKeyProducts, _products.map((p) => p.toJson()).toList());
     await _saveList(_kKeyPosts, _posts.map((p) => p.toJson()).toList());
     await _saveList(_kKeyOrders, _orders.map((o) => o.toJson()).toList());
-    await _saveList(_kKeyCommissions, _commissions.map((c) => c.toJson()).toList());
-    await _saveList(_kKeyWithdrawals, _withdrawals.map((w) => w.toJson()).toList());
+    await _saveList(
+      _kKeyCommissions,
+      _commissions.map((c) => c.toJson()).toList(),
+    );
+    await _saveList(
+      _kKeyWithdrawals,
+      _withdrawals.map((w) => w.toJson()).toList(),
+    );
     await _saveList(_kKeyRevShares, _revShares.map((r) => r.toJson()).toList());
     await _saveList(_kKeyReviews, _reviews.map((r) => r.toJson()).toList());
-    await _saveList(_kKeyVerifications, _verifications.map((v) => v.toJson()).toList());
-    await _saveList(_kKeyPromotions, _promotions.map((p) => p.toJson()).toList());
+    await _saveList(
+      _kKeyVerifications,
+      _verifications.map((v) => v.toJson()).toList(),
+    );
+    await _saveList(
+      _kKeyPromotions,
+      _promotions.map((p) => p.toJson()).toList(),
+    );
   }
 
   // --- Implement AppRepositoryInterface Methods ---
@@ -483,26 +569,35 @@ class LocalDemoRepository implements AppRepositoryInterface {
 
   @override
   bool isFollowing(String currentUserId, String targetUserId) {
-    List<String> following = _prefs.getStringList('$_kKeyFollowsPrefix$currentUserId') ?? [];
+    List<String> following =
+        _prefs.getStringList('$_kKeyFollowsPrefix$currentUserId') ?? [];
     return following.contains(targetUserId);
   }
 
   @override
-  Future<void> toggleFollowUser(String currentUserId, String targetUserId) async {
+  Future<void> toggleFollowUser(
+    String currentUserId,
+    String targetUserId,
+  ) async {
     // Self-follow prevention
     if (currentUserId == targetUserId) return;
-    
-    List<String> following = _prefs.getStringList('$_kKeyFollowsPrefix$currentUserId') ?? [];
+
+    List<String> following =
+        _prefs.getStringList('$_kKeyFollowsPrefix$currentUserId') ?? [];
     User? targetUser = getUserById(targetUserId);
     if (targetUser == null) return;
 
     if (following.contains(targetUserId)) {
       following.remove(targetUserId);
-      targetUser = targetUser.copyWith(followerCount: (targetUser.followerCount - 1).clamp(0, 999999));
+      targetUser = targetUser.copyWith(
+        followerCount: (targetUser.followerCount - 1).clamp(0, 999999),
+      );
     } else {
       // Prevent duplicate followers
       following.add(targetUserId);
-      targetUser = targetUser.copyWith(followerCount: targetUser.followerCount + 1);
+      targetUser = targetUser.copyWith(
+        followerCount: targetUser.followerCount + 1,
+      );
     }
     await _prefs.setStringList('$_kKeyFollowsPrefix$currentUserId', following);
     await updateUser(targetUser);
@@ -561,7 +656,9 @@ class LocalDemoRepository implements AppRepositoryInterface {
 
     int idx = _posts.indexWhere((p) => p.id == postId);
     if (idx != -1) {
-      _posts[idx] = _posts[idx].copyWith(viewsCount: _posts[idx].viewsCount + 1);
+      _posts[idx] = _posts[idx].copyWith(
+        viewsCount: _posts[idx].viewsCount + 1,
+      );
       await _prefs.setBool(key, true);
       await _saveList(_kKeyPosts, _posts.map((p) => p.toJson()).toList());
       return true;
@@ -585,7 +682,12 @@ class LocalDemoRepository implements AppRepositoryInterface {
   }
 
   @override
-  Future<void> addPostComment(String postId, String userId, String userName, String text) async {
+  Future<void> addPostComment(
+    String postId,
+    String userId,
+    String userName,
+    String text,
+  ) async {
     int idx = _posts.indexWhere((p) => p.id == postId);
     if (idx == -1) return;
     Post post = _posts[idx];
@@ -605,20 +707,26 @@ class LocalDemoRepository implements AppRepositoryInterface {
   Future<void> incrementPostShares(String postId) async {
     int idx = _posts.indexWhere((p) => p.id == postId);
     if (idx != -1) {
-      _posts[idx] = _posts[idx].copyWith(sharesCount: _posts[idx].sharesCount + 1);
+      _posts[idx] = _posts[idx].copyWith(
+        sharesCount: _posts[idx].sharesCount + 1,
+      );
       await _saveList(_kKeyPosts, _posts.map((p) => p.toJson()).toList());
     }
   }
 
   @override
-  Future<void> recordProductClick(String postId, String productId, String userId) async {
+  Future<void> recordProductClick(
+    String postId,
+    String productId,
+    String userId,
+  ) async {
     int idx = _posts.indexWhere((p) => p.id == postId);
     if (idx != -1) {
       if (_posts[idx].creatorId == userId) {
         return; // Exclude self-clicks
       }
-      
-      String key = 'trell_click_${userId}_${postId}_${productId}';
+
+      String key = 'trell_click_${userId}_${postId}_$productId';
       int? lastClickTime = _prefs.getInt(key);
       int now = DateTime.now().millisecondsSinceEpoch;
       // 30 minute duplicate click prevention window
@@ -626,7 +734,9 @@ class LocalDemoRepository implements AppRepositoryInterface {
         return;
       }
 
-      _posts[idx] = _posts[idx].copyWith(productClicksCount: _posts[idx].productClicksCount + 1);
+      _posts[idx] = _posts[idx].copyWith(
+        productClicksCount: _posts[idx].productClicksCount + 1,
+      );
       await _prefs.setInt(key, now);
       await _saveList(_kKeyPosts, _posts.map((p) => p.toJson()).toList());
     }
@@ -661,13 +771,20 @@ class LocalDemoRepository implements AppRepositoryInterface {
   }
 
   @override
-  Future<void> addToCart(String userId, Product product, String? creatorId, String? postId) async {
+  Future<void> addToCart(
+    String userId,
+    Product product,
+    String? creatorId,
+    String? postId,
+  ) async {
     List<CartItem> cart = getCart(userId);
     // Separate items by product, creator, AND post attribution
-    int idx = cart.indexWhere((item) =>
-        item.product.id == product.id &&
-        item.referrerCreatorId == creatorId &&
-        item.referrerPostId == postId);
+    int idx = cart.indexWhere(
+      (item) =>
+          item.product.id == product.id &&
+          item.referrerCreatorId == creatorId &&
+          item.referrerPostId == postId,
+    );
 
     if (idx != -1) {
       cart[idx] = cart[idx].copyWith(quantity: cart[idx].quantity + 1);
@@ -676,24 +793,34 @@ class LocalDemoRepository implements AppRepositoryInterface {
       // same product+creator+post combination always gets the same key.
       final cartItemId =
           'ci_${product.id}_${creatorId ?? 'direct'}_${postId ?? 'none'}';
-      cart.add(CartItem(
-        cartItemId: cartItemId,
-        product: product,
-        quantity: 1,
-        referrerCreatorId: creatorId,
-        referrerPostId: postId,
-      ));
+      cart.add(
+        CartItem(
+          cartItemId: cartItemId,
+          product: product,
+          quantity: 1,
+          referrerCreatorId: creatorId,
+          referrerPostId: postId,
+        ),
+      );
     }
     await _saveCart(userId, cart);
   }
 
   @override
-  Future<void> updateCartQuantity(String userId, String productId, String? creatorId, String? postId, int quantity) async {
+  Future<void> updateCartQuantity(
+    String userId,
+    String productId,
+    String? creatorId,
+    String? postId,
+    int quantity,
+  ) async {
     List<CartItem> cart = getCart(userId);
-    int idx = cart.indexWhere((item) =>
-        item.product.id == productId &&
-        item.referrerCreatorId == creatorId &&
-        item.referrerPostId == postId);
+    int idx = cart.indexWhere(
+      (item) =>
+          item.product.id == productId &&
+          item.referrerCreatorId == creatorId &&
+          item.referrerPostId == postId,
+    );
     if (idx != -1) {
       if (quantity <= 0) {
         cart.removeAt(idx);
@@ -705,12 +832,19 @@ class LocalDemoRepository implements AppRepositoryInterface {
   }
 
   @override
-  Future<void> removeFromCart(String userId, String productId, String? creatorId, String? postId) async {
+  Future<void> removeFromCart(
+    String userId,
+    String productId,
+    String? creatorId,
+    String? postId,
+  ) async {
     List<CartItem> cart = getCart(userId);
-    cart.removeWhere((item) =>
-        item.product.id == productId &&
-        item.referrerCreatorId == creatorId &&
-        item.referrerPostId == postId);
+    cart.removeWhere(
+      (item) =>
+          item.product.id == productId &&
+          item.referrerCreatorId == creatorId &&
+          item.referrerPostId == postId,
+    );
     await _saveCart(userId, cart);
   }
 
@@ -746,9 +880,12 @@ class LocalDemoRepository implements AppRepositoryInterface {
       }
     }
 
-    final idem = idempotencyKey ?? 'idem_${DateTime.now().millisecondsSinceEpoch}';
+    final idem =
+        idempotencyKey ?? 'idem_${DateTime.now().millisecondsSinceEpoch}';
     int totalPaise = items.fold(0, (sum, item) => sum + item.totalPaise);
-    OrderStatus status = simulateSuccess ? OrderStatus.paid : OrderStatus.cancelled;
+    OrderStatus status = simulateSuccess
+        ? OrderStatus.paid
+        : OrderStatus.cancelled;
 
     // Snapshot product data into order items (immutable historical record)
     List<OrderItem> orderItems = items.map((cartItem) {
@@ -782,11 +919,15 @@ class LocalDemoRepository implements AppRepositoryInterface {
     if (simulateSuccess) {
       // Create Pending Commission only for attributed items
       for (var item in orderItems) {
-        if (item.referrerCreatorId != null && item.referrerCreatorId!.isNotEmpty) {
+        if (item.referrerCreatorId != null &&
+            item.referrerCreatorId!.isNotEmpty) {
           // Duplicate commission prevention: check no commission already exists
-          bool alreadyExists = _commissions.any((c) =>
-              c.orderId == newOrder.id && c.productId == item.productId &&
-              c.creatorId == item.referrerCreatorId);
+          bool alreadyExists = _commissions.any(
+            (c) =>
+                c.orderId == newOrder.id &&
+                c.productId == item.productId &&
+                c.creatorId == item.referrerCreatorId,
+          );
           if (!alreadyExists) {
             int commAmount = item.calculatedCommissionPaise;
             CommissionTransaction comm = CommissionTransaction(
@@ -816,7 +957,9 @@ class LocalDemoRepository implements AppRepositoryInterface {
     if (idx == -1) return;
 
     Order oldOrder = _orders[idx];
-    if (oldOrder.status == newStatus) return; // Idempotent: already in target state
+    if (oldOrder.status == newStatus) {
+      return; // Idempotent: already in target state
+    }
 
     // ── Enforce transition table ──────────────────────────────────────────────
     if (!oldOrder.status.canTransitionTo(newStatus)) {
@@ -832,7 +975,9 @@ class LocalDemoRepository implements AppRepositoryInterface {
       for (int i = 0; i < _commissions.length; i++) {
         if (_commissions[i].orderId == orderId &&
             _commissions[i].status == CommissionStatus.pending) {
-          _commissions[i] = _commissions[i].copyWith(status: CommissionStatus.available);
+          _commissions[i] = _commissions[i].copyWith(
+            status: CommissionStatus.available,
+          );
         }
       }
     } else if (newStatus == OrderStatus.cancelled) {
@@ -840,7 +985,9 @@ class LocalDemoRepository implements AppRepositoryInterface {
       for (int i = 0; i < _commissions.length; i++) {
         if (_commissions[i].orderId == orderId &&
             _commissions[i].status == CommissionStatus.pending) {
-          _commissions[i] = _commissions[i].copyWith(status: CommissionStatus.reversed);
+          _commissions[i] = _commissions[i].copyWith(
+            status: CommissionStatus.reversed,
+          );
         }
       }
     } else if (newStatus == OrderStatus.refunded) {
@@ -861,16 +1008,18 @@ class LocalDemoRepository implements AppRepositoryInterface {
           case CommissionStatus.paidOut:
             // After payout: create clawback record (debt to platform)
             // Preserve the paidOut record as historical cash record.
-            _commissions.add(CommissionTransaction(
-              id: 'claw_${DateTime.now().microsecondsSinceEpoch}_${comm.productId}',
-              creatorId: comm.creatorId,
-              orderId: orderId,
-              productId: comm.productId,
-              amountPaise: -comm.amountPaise, // Negative = debt
-              status: CommissionStatus.clawback,
-              createdAt: DateTime.now(),
-              withdrawalId: comm.withdrawalId,
-            ));
+            _commissions.add(
+              CommissionTransaction(
+                id: 'claw_${DateTime.now().microsecondsSinceEpoch}_${comm.productId}',
+                creatorId: comm.creatorId,
+                orderId: orderId,
+                productId: comm.productId,
+                amountPaise: -comm.amountPaise, // Negative = debt
+                status: CommissionStatus.clawback,
+                createdAt: DateTime.now(),
+                withdrawalId: comm.withdrawalId,
+              ),
+            );
             break;
           case CommissionStatus.reversed:
           case CommissionStatus.clawback:
@@ -889,7 +1038,8 @@ class LocalDemoRepository implements AppRepositoryInterface {
   }
 
   @override
-  List<WithdrawalRequest> getWithdrawalRequests() => List.unmodifiable(_withdrawals);
+  List<WithdrawalRequest> getWithdrawalRequests() =>
+      List.unmodifiable(_withdrawals);
 
   @override
   List<WithdrawalRequest> getWithdrawalRequestsForCreator(String creatorId) {
@@ -912,8 +1062,14 @@ class LocalDemoRepository implements AppRepositoryInterface {
 
     // 1. Check for outstanding clawback debt — block new withdrawals if debt exists
     int totalClawback = _commissions
-        .where((c) => c.creatorId == creatorId && c.status == CommissionStatus.clawback)
-        .fold(0, (sum, c) => sum + c.amountPaise); // amountPaise is negative for clawback
+        .where(
+          (c) =>
+              c.creatorId == creatorId && c.status == CommissionStatus.clawback,
+        )
+        .fold(
+          0,
+          (sum, c) => sum + c.amountPaise,
+        ); // amountPaise is negative for clawback
     // totalClawback is negative; if it's below zero, creator owes money
     if (totalClawback < 0) {
       return null; // Outstanding recovery due; cannot withdraw
@@ -921,12 +1077,19 @@ class LocalDemoRepository implements AppRepositoryInterface {
 
     // 2. Calculate available balance
     int totalAvailable = _commissions
-        .where((c) => c.creatorId == creatorId && c.status == CommissionStatus.available)
+        .where(
+          (c) =>
+              c.creatorId == creatorId &&
+              c.status == CommissionStatus.available,
+        )
         .fold(0, (sum, c) => sum + c.amountPaise);
 
     // Subtract existing pending withdrawal reservations (already requested but not processed)
     int pendingWithdrawals = _withdrawals
-        .where((w) => w.creatorId == creatorId && w.status == WithdrawalStatus.pending)
+        .where(
+          (w) =>
+              w.creatorId == creatorId && w.status == WithdrawalStatus.pending,
+        )
         .fold(0, (sum, w) => sum + w.amountPaise);
 
     int netAvailable = totalAvailable - pendingWithdrawals;
@@ -965,15 +1128,17 @@ class LocalDemoRepository implements AppRepositoryInterface {
             status: CommissionStatus.reserved,
             withdrawalId: reqId,
           );
-          _commissions.add(CommissionTransaction(
-            id: 'comm_split_${DateTime.now().microsecondsSinceEpoch}',
-            creatorId: creatorId,
-            orderId: _commissions[i].orderId,
-            productId: _commissions[i].productId,
-            amountPaise: leftover,
-            status: CommissionStatus.available,
-            createdAt: _commissions[i].createdAt,
-          ));
+          _commissions.add(
+            CommissionTransaction(
+              id: 'comm_split_${DateTime.now().microsecondsSinceEpoch}',
+              creatorId: creatorId,
+              orderId: _commissions[i].orderId,
+              productId: _commissions[i].productId,
+              amountPaise: leftover,
+              status: CommissionStatus.available,
+              createdAt: _commissions[i].createdAt,
+            ),
+          );
           remainingReservation = 0;
           break;
         }
@@ -987,7 +1152,11 @@ class LocalDemoRepository implements AppRepositoryInterface {
   }
 
   @override
-  Future<void> processWithdrawal(String requestId, bool approve, {String? reason}) async {
+  Future<void> processWithdrawal(
+    String requestId,
+    bool approve, {
+    String? reason,
+  }) async {
     int idx = _withdrawals.indexWhere((w) => w.id == requestId);
     if (idx == -1) return;
 
@@ -998,7 +1167,11 @@ class LocalDemoRepository implements AppRepositoryInterface {
     if (approve) {
       // Verify reserved commissions for this withdrawal still exist
       int reserved = _commissions
-          .where((c) => c.withdrawalId == requestId && c.status == CommissionStatus.reserved)
+          .where(
+            (c) =>
+                c.withdrawalId == requestId &&
+                c.status == CommissionStatus.reserved,
+          )
           .fold(0, (sum, c) => sum + c.amountPaise);
       if (reserved < req.amountPaise) {
         // Funds no longer reserved (e.g., refund happened while pending)
@@ -1012,7 +1185,9 @@ class LocalDemoRepository implements AppRepositoryInterface {
         for (int i = 0; i < _commissions.length; i++) {
           if (_commissions[i].withdrawalId == requestId &&
               _commissions[i].status == CommissionStatus.reserved) {
-            _commissions[i] = _commissions[i].copyWith(status: CommissionStatus.available);
+            _commissions[i] = _commissions[i].copyWith(
+              status: CommissionStatus.available,
+            );
           }
         }
         await _saveAll();
@@ -1023,7 +1198,9 @@ class LocalDemoRepository implements AppRepositoryInterface {
       for (int i = 0; i < _commissions.length; i++) {
         if (_commissions[i].withdrawalId == requestId &&
             _commissions[i].status == CommissionStatus.reserved) {
-          _commissions[i] = _commissions[i].copyWith(status: CommissionStatus.paidOut);
+          _commissions[i] = _commissions[i].copyWith(
+            status: CommissionStatus.paidOut,
+          );
         }
       }
 
@@ -1060,7 +1237,12 @@ class LocalDemoRepository implements AppRepositoryInterface {
   }
 
   @override
-  Future<void> recordRevenueShare(String creatorId, int sourcePaise, double shareRate, String note) async {
+  Future<void> recordRevenueShare(
+    String creatorId,
+    int sourcePaise,
+    double shareRate,
+    String note,
+  ) async {
     double clampedRate = shareRate.clamp(0.0, 0.30); // Max 30% cap
     int sharePaise = (sourcePaise * clampedRate).round();
 
@@ -1095,10 +1277,12 @@ class LocalDemoRepository implements AppRepositoryInterface {
   // A different user's order never qualifies.
   @override
   bool hasUserPurchasedProduct(String userId, String productId) {
-    return _orders.any((order) =>
-        order.buyerUserId == userId &&
-        order.status == OrderStatus.completed && // Must be delivered
-        order.items.any((item) => item.productId == productId));
+    return _orders.any(
+      (order) =>
+          order.buyerUserId == userId &&
+          order.status == OrderStatus.completed && // Must be delivered
+          order.items.any((item) => item.productId == productId),
+    );
   }
 
   @override
@@ -1119,11 +1303,13 @@ class LocalDemoRepository implements AppRepositoryInterface {
 
     // One review per (userId, productId): overwrite existing if present
     final existingIdx = _reviews.indexWhere(
-        (r) => r.userId == userId && r.productId == productId);
+      (r) => r.userId == userId && r.productId == productId,
+    );
 
     final rev = ProductReview(
       id: existingIdx != -1
-          ? _reviews[existingIdx].id // Preserve original review ID on edit
+          ? _reviews[existingIdx]
+                .id // Preserve original review ID on edit
           : 'rev_${DateTime.now().millisecondsSinceEpoch}',
       productId: productId,
       userId: userId,
@@ -1132,7 +1318,9 @@ class LocalDemoRepository implements AppRepositoryInterface {
       rating: clampedRating,
       comment: trimmedComment,
       isVerifiedPurchase: isVerified,
-      createdAt: existingIdx != -1 ? _reviews[existingIdx].createdAt : DateTime.now(),
+      createdAt: existingIdx != -1
+          ? _reviews[existingIdx].createdAt
+          : DateTime.now(),
     );
 
     if (existingIdx != -1) {
@@ -1162,7 +1350,8 @@ class LocalDemoRepository implements AppRepositoryInterface {
   }
 
   @override
-  List<VerificationApplication> getVerificationApplications() => List.unmodifiable(_verifications);
+  List<VerificationApplication> getVerificationApplications() =>
+      List.unmodifiable(_verifications);
 
   @override
   VerificationApplication? getVerificationForCreator(String creatorId) {
@@ -1182,7 +1371,11 @@ class LocalDemoRepository implements AppRepositoryInterface {
     String reason,
   ) async {
     // Validate fields — must be non-empty after trimming
-    if (category.trim().isEmpty || socialLink.trim().isEmpty || reason.trim().isEmpty) return;
+    if (category.trim().isEmpty ||
+        socialLink.trim().isEmpty ||
+        reason.trim().isEmpty) {
+      return;
+    }
 
     // Prevent duplicate pending application: only allow resubmission if
     // previous application is rejected (documented reapplication rule).
@@ -1208,7 +1401,10 @@ class LocalDemoRepository implements AppRepositoryInterface {
 
     _verifications.removeWhere((v) => v.creatorId == creatorId);
     _verifications.insert(0, app);
-    await _saveList(_kKeyVerifications, _verifications.map((v) => v.toJson()).toList());
+    await _saveList(
+      _kKeyVerifications,
+      _verifications.map((v) => v.toJson()).toList(),
+    );
   }
 
   @override
@@ -1234,9 +1430,14 @@ class LocalDemoRepository implements AppRepositoryInterface {
     if (adminId == app.creatorId) return;
 
     // Rejection requires a reason
-    if (!approve && (rejectionReason == null || rejectionReason.trim().isEmpty)) return;
+    if (!approve &&
+        (rejectionReason == null || rejectionReason.trim().isEmpty)) {
+      return;
+    }
 
-    final newStatus = approve ? VerificationStatus.approved : VerificationStatus.rejected;
+    final newStatus = approve
+        ? VerificationStatus.approved
+        : VerificationStatus.rejected;
     _verifications[idx] = app.copyWith(
       status: newStatus,
       decidedByAdminId: adminId,
@@ -1274,7 +1475,9 @@ class LocalDemoRepository implements AppRepositoryInterface {
     String? failureReason,
   }) async {
     // ── Idempotency: same attempt key → return existing record ──────────────
-    final existing = _promotions.where((p) => p.paymentAttemptId == paymentAttemptId);
+    final existing = _promotions.where(
+      (p) => p.paymentAttemptId == paymentAttemptId,
+    );
     if (existing.isNotEmpty) return existing.first;
 
     // ── Ownership check: only the creator may promote their own post ─────────
@@ -1293,28 +1496,38 @@ class LocalDemoRepository implements AppRepositoryInterface {
         createdAt: DateTime.now().toUtc(),
       );
       _promotions.insert(0, failed);
-      await _saveList(_kKeyPromotions, _promotions.map((p) => p.toJson()).toList());
+      await _saveList(
+        _kKeyPromotions,
+        _promotions.map((p) => p.toJson()).toList(),
+      );
       return failed;
     }
 
     // ── Prevent concurrent pending attempts for the same post ────────────────
-    final hasPendingAttempt = _promotions.any((p) =>
-        p.postId == postId &&
-        p.paymentStatus == PromotionPaymentStatus.pending);
+    final hasPendingAttempt = _promotions.any(
+      (p) =>
+          p.postId == postId &&
+          p.paymentStatus == PromotionPaymentStatus.pending,
+    );
     if (hasPendingAttempt) {
       // Return the existing pending attempt so caller can resolve it
-      return _promotions.firstWhere((p) =>
-          p.postId == postId &&
-          p.paymentStatus == PromotionPaymentStatus.pending);
+      return _promotions.firstWhere(
+        (p) =>
+            p.postId == postId &&
+            p.paymentStatus == PromotionPaymentStatus.pending,
+      );
     }
 
     // ── Prevent duplicate active promotions for the same post ────────────────
     if (simulateSuccess) {
-      final hasActivePromotion = _promotions.any((p) =>
-          p.postId == postId && p.isActive());
+      final hasActivePromotion = _promotions.any(
+        (p) => p.postId == postId && p.isActive(),
+      );
       if (hasActivePromotion) {
         // Return existing active promotion as if this was a replay
-        return _promotions.firstWhere((p) => p.postId == postId && p.isActive());
+        return _promotions.firstWhere(
+          (p) => p.postId == postId && p.isActive(),
+        );
       }
     }
 

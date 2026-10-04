@@ -27,15 +27,18 @@ class FakePrefs {
     _store[key] = value;
     return true;
   }
+
   bool containsKey(String key) => _store.containsKey(key);
   Future<bool> remove(String key) async {
     _store.remove(key);
     return true;
   }
+
   Future<bool> clear() async {
     _store.clear();
     return true;
   }
+
   List<String>? getStringList(String key) => null;
   Future<bool> setStringList(String key, List<String> value) async => true;
   bool? getBool(String key) => null;
@@ -43,7 +46,6 @@ class FakePrefs {
   int? getInt(String key) => null;
   Future<bool> setInt(String key, int value) async => true;
 }
-
 
 // ─── Pure logic helpers (no SharedPreferences needed) ─────────────────────────
 
@@ -82,12 +84,13 @@ List<Order> _buildOrders({
 ///   eligible = order.buyerUserId == userId
 ///              && order.status == OrderStatus.completed
 ///              && order.items.any(item.productId == productId)
-bool _checkEligibility(
-    List<Order> orders, String userId, String productId) {
-  return orders.any((order) =>
-      order.buyerUserId == userId &&
-      order.status == OrderStatus.completed &&
-      order.items.any((item) => item.productId == productId));
+bool _checkEligibility(List<Order> orders, String userId, String productId) {
+  return orders.any(
+    (order) =>
+        order.buyerUserId == userId &&
+        order.status == OrderStatus.completed &&
+        order.items.any((item) => item.productId == productId),
+  );
 }
 
 void main() {
@@ -100,38 +103,59 @@ void main() {
 
     test('Completed order grants Verified Purchase badge', () {
       final orders = _buildOrders(
-          buyerUserId: userId, productId: productId, status: OrderStatus.completed);
+        buyerUserId: userId,
+        productId: productId,
+        status: OrderStatus.completed,
+      );
       expect(_checkEligibility(orders, userId, productId), isTrue);
     });
 
     test('Paid (not yet delivered) order does NOT grant badge', () {
       final orders = _buildOrders(
-          buyerUserId: userId, productId: productId, status: OrderStatus.paid);
+        buyerUserId: userId,
+        productId: productId,
+        status: OrderStatus.paid,
+      );
       expect(_checkEligibility(orders, userId, productId), isFalse);
     });
 
     test('Cancelled order does NOT grant badge', () {
       final orders = _buildOrders(
-          buyerUserId: userId, productId: productId, status: OrderStatus.cancelled);
+        buyerUserId: userId,
+        productId: productId,
+        status: OrderStatus.cancelled,
+      );
       expect(_checkEligibility(orders, userId, productId), isFalse);
     });
 
     test('Refunded order does NOT grant badge', () {
       final orders = _buildOrders(
-          buyerUserId: userId, productId: productId, status: OrderStatus.refunded);
+        buyerUserId: userId,
+        productId: productId,
+        status: OrderStatus.refunded,
+      );
       expect(_checkEligibility(orders, userId, productId), isFalse);
     });
 
-    test('A different user\'s completed order does NOT grant badge to reviewer', () {
-      final orders = _buildOrders(
-          buyerUserId: 'u_other', productId: productId, status: OrderStatus.completed);
-      // Checking eligibility for userId, not u_other
-      expect(_checkEligibility(orders, userId, productId), isFalse);
-    });
+    test(
+      'A different user\'s completed order does NOT grant badge to reviewer',
+      () {
+        final orders = _buildOrders(
+          buyerUserId: 'u_other',
+          productId: productId,
+          status: OrderStatus.completed,
+        );
+        // Checking eligibility for userId, not u_other
+        expect(_checkEligibility(orders, userId, productId), isFalse);
+      },
+    );
 
     test('Completed order for different product does NOT grant badge', () {
       final orders = _buildOrders(
-          buyerUserId: userId, productId: 'p_other', status: OrderStatus.completed);
+        buyerUserId: userId,
+        productId: 'p_other',
+        status: OrderStatus.completed,
+      );
       expect(_checkEligibility(orders, userId, productId), isFalse);
     });
 
@@ -142,7 +166,15 @@ void main() {
           idempotencyKey: 'idem_1',
           buyerUserId: userId,
           buyerName: 'Buyer',
-          items: [OrderItem(productId: productId, productName: 'P', pricePaise: 100, quantity: 1, commissionRate: 0.1)],
+          items: [
+            OrderItem(
+              productId: productId,
+              productName: 'P',
+              pricePaise: 100,
+              quantity: 1,
+              commissionRate: 0.1,
+            ),
+          ],
           totalPaise: 100,
           shippingAddress: 'Addr',
           status: OrderStatus.refunded, // refunded qualifying order
@@ -153,7 +185,15 @@ void main() {
           idempotencyKey: 'idem_2',
           buyerUserId: userId,
           buyerName: 'Buyer',
-          items: [OrderItem(productId: productId, productName: 'P', pricePaise: 100, quantity: 1, commissionRate: 0.1)],
+          items: [
+            OrderItem(
+              productId: productId,
+              productName: 'P',
+              pricePaise: 100,
+              quantity: 1,
+              commissionRate: 0.1,
+            ),
+          ],
           totalPaise: 100,
           shippingAddress: 'Addr',
           status: OrderStatus.completed, // still qualifying
@@ -171,7 +211,15 @@ void main() {
           idempotencyKey: 'idem_1',
           buyerUserId: userId,
           buyerName: 'Buyer',
-          items: [OrderItem(productId: productId, productName: 'P', pricePaise: 100, quantity: 1, commissionRate: 0.1)],
+          items: [
+            OrderItem(
+              productId: productId,
+              productName: 'P',
+              pricePaise: 100,
+              quantity: 1,
+              commissionRate: 0.1,
+            ),
+          ],
           totalPaise: 100,
           shippingAddress: 'Addr',
           status: OrderStatus.refunded,
@@ -237,13 +285,17 @@ void main() {
       // Simulate: cannot submit when status is pending
       VerificationStatus status = VerificationStatus.pending;
       // Attempt to resubmit — should be blocked
-      bool canSubmit = status != VerificationStatus.pending && status != VerificationStatus.approved;
+      bool canSubmit =
+          status != VerificationStatus.pending &&
+          status != VerificationStatus.approved;
       expect(canSubmit, isFalse);
     });
 
     test('Duplicate approved submission is blocked', () {
       VerificationStatus status = VerificationStatus.approved;
-      bool canSubmit = status != VerificationStatus.pending && status != VerificationStatus.approved;
+      bool canSubmit =
+          status != VerificationStatus.pending &&
+          status != VerificationStatus.approved;
       expect(canSubmit, isFalse);
     });
 
@@ -251,7 +303,8 @@ void main() {
       String category = '';
       String socialLink = '';
       String reason = '';
-      bool valid = category.trim().isNotEmpty &&
+      bool valid =
+          category.trim().isNotEmpty &&
           socialLink.trim().isNotEmpty &&
           reason.trim().isNotEmpty;
       expect(valid, isFalse);
@@ -259,7 +312,8 @@ void main() {
       category = 'Fashion';
       socialLink = 'https://instagram.com/test';
       reason = 'I create content daily.';
-      valid = category.trim().isNotEmpty &&
+      valid =
+          category.trim().isNotEmpty &&
           socialLink.trim().isNotEmpty &&
           reason.trim().isNotEmpty;
       expect(valid, isTrue);
@@ -304,12 +358,11 @@ void main() {
 
     test('Rejection without a reason is blocked', () {
       String? rejectionReason;
-      bool validRejection = rejectionReason != null && rejectionReason.trim().isNotEmpty;
-      expect(validRejection, isFalse);
+      bool isReasonValid(String? s) => s != null && s.trim().isNotEmpty;
+      expect(isReasonValid(rejectionReason), isFalse);
 
       rejectionReason = 'Insufficient follower count';
-      validRejection = rejectionReason.trim().isNotEmpty;
-      expect(validRejection, isTrue);
+      expect(isReasonValid(rejectionReason), isTrue);
     });
 
     test('Stale/repeated decision on non-pending application is ignored', () {
@@ -324,23 +377,26 @@ void main() {
   // STEP 9 §5: Dynamic creator badges (resolve from user record, not post copy)
   // ─────────────────────────────────────────────────────────────────────────
   group('Step 9 §5: Dynamic creator badge resolution', () {
-    test('Badge reflects current user.isVerifiedCreator, not stale post copy', () {
-      // User gets verified
-      User creator = User(
-        id: 'u_creator1',
-        name: 'Priya',
-        username: 'priya',
-        avatarUrl: '',
-        role: UserRole.creator,
-        isVerifiedCreator: false,
-      );
+    test(
+      'Badge reflects current user.isVerifiedCreator, not stale post copy',
+      () {
+        // User gets verified
+        User creator = User(
+          id: 'u_creator1',
+          name: 'Priya',
+          username: 'priya',
+          avatarUrl: '',
+          role: UserRole.creator,
+          isVerifiedCreator: false,
+        );
 
-      // Simulate approval updating the user record
-      creator = creator.copyWith(isVerifiedCreator: true);
+        // Simulate approval updating the user record
+        creator = creator.copyWith(isVerifiedCreator: true);
 
-      // Feed should resolve badge from user record:
-      expect(creator.isVerifiedCreator, isTrue);
-    });
+        // Feed should resolve badge from user record:
+        expect(creator.isVerifiedCreator, isTrue);
+      },
+    );
 
     test('Rejection does not grant badge', () {
       User creator = User(
@@ -502,7 +558,9 @@ void main() {
       );
       final List<PromotionRecord> store = [existingPromo];
       // Check if post already has an active promotion
-      bool hasActive = store.any((p) => p.postId == 'post_1' && p.isActive(now: now));
+      bool hasActive = store.any(
+        (p) => p.postId == 'post_1' && p.isActive(now: now),
+      );
       expect(hasActive, isTrue); // New purchase should be blocked
     });
   });
@@ -582,7 +640,9 @@ void main() {
     test('Expired post can be promoted again (new attempt)', () {
       final activationTime = DateTime(2025, 1, 1, 0, 0, 0, 0, 0);
       final expiryTime = activationTime.add(const Duration(days: 7));
-      final testNow = activationTime.add(const Duration(days: 8)); // after expiry
+      final testNow = activationTime.add(
+        const Duration(days: 8),
+      ); // after expiry
 
       final oldRecord = PromotionRecord(
         id: 'p_old',
@@ -601,7 +661,8 @@ void main() {
       expect(oldRecord.isActive(now: testNow), isFalse);
 
       // New promotion can be created (no active promotion blocking)
-      bool hasActive = [oldRecord].any((p) => p.postId == 'post_a' && p.isActive(now: testNow));
+      bool hasActive = [oldRecord]
+          .any((p) => p.postId == 'post_a' && p.isActive(now: testNow));
       expect(hasActive, isFalse); // No active promotion — new one may proceed
     });
 
@@ -609,7 +670,9 @@ void main() {
       // Payment state and promotion state are distinct
       final activationTime = DateTime(2025, 1, 1);
       final expiryTime = activationTime.add(const Duration(days: 7));
-      final testNow = activationTime.add(const Duration(days: 8)); // after expiry
+      final testNow = activationTime.add(
+        const Duration(days: 8),
+      ); // after expiry
 
       final record = PromotionRecord(
         id: 'p_paid_expired',
@@ -618,7 +681,8 @@ void main() {
         creatorId: 'u_creator1',
         packagePricePaise: 49900,
         durationDays: 7,
-        paymentStatus: PromotionPaymentStatus.success, // payment still successful
+        paymentStatus:
+            PromotionPaymentStatus.success, // payment still successful
         activationTime: activationTime,
         expiryTime: expiryTime,
         createdAt: activationTime,
@@ -637,7 +701,12 @@ void main() {
   group('Step 10 §10: Featured feed sorting', () {
     final now = DateTime(2025, 6, 1, 12, 0, 0).toUtc();
 
-    Post makePost(String id, {bool isPromoted = false, DateTime? expiry, DateTime? createdAt}) {
+    Post makePost(
+      String id, {
+      bool isPromoted = false,
+      DateTime? expiry,
+      DateTime? createdAt,
+    }) {
       return Post(
         id: id,
         creatorId: 'u_creator1',
@@ -669,7 +738,11 @@ void main() {
     }
 
     test('Active promoted posts appear before non-promoted posts', () {
-      final promoted = makePost('promoted', isPromoted: true, expiry: now.add(const Duration(days: 5)));
+      final promoted = makePost(
+        'promoted',
+        isPromoted: true,
+        expiry: now.add(const Duration(days: 5)),
+      );
       final regular = makePost('regular');
       final sorted = sortFeed([regular, promoted], now);
       expect(sorted.first.id, equals('promoted'));
@@ -682,34 +755,50 @@ void main() {
         expiry: now.subtract(const Duration(hours: 1)),
         createdAt: now,
       );
-      final regular = makePost('regular', createdAt: now.subtract(const Duration(days: 1)));
+      final regular = makePost(
+        'regular',
+        createdAt: now.subtract(const Duration(days: 1)),
+      );
       final sorted = sortFeed([expired, regular], now);
       // Both non-active; expired is newer so comes first
       expect(sorted.first.id, equals('expired'));
     });
 
     test('Among active promoted posts: deterministic newest-first order', () {
-      final older = makePost('older_promo', isPromoted: true,
-          expiry: now.add(const Duration(days: 5)),
-          createdAt: now.subtract(const Duration(days: 5)));
-      final newer = makePost('newer_promo', isPromoted: true,
-          expiry: now.add(const Duration(days: 5)),
-          createdAt: now.subtract(const Duration(days: 2)));
+      final older = makePost(
+        'older_promo',
+        isPromoted: true,
+        expiry: now.add(const Duration(days: 5)),
+        createdAt: now.subtract(const Duration(days: 5)),
+      );
+      final newer = makePost(
+        'newer_promo',
+        isPromoted: true,
+        expiry: now.add(const Duration(days: 5)),
+        createdAt: now.subtract(const Duration(days: 2)),
+      );
       final sorted = sortFeed([older, newer], now);
       expect(sorted.first.id, equals('newer_promo'));
     });
 
-    test('Post with isPromoted=true but null expiry is NOT treated as active', () {
-      // Matches the new strict rule: promotionExpiry != null required
-      final flaggedNoExpiry = makePost('flagged', isPromoted: true, expiry: null);
-      final regular = makePost('regular');
-      // Neither is active since flaggedNoExpiry has no expiry
-      final sorted = sortFeed([regular, flaggedNoExpiry], now);
-      // Both non-active, order determined by createdAt; same date so stable
-      expect(sorted, isNotEmpty);
-      // The important thing: flaggedNoExpiry is NOT treated as promoted
-      expect(isActive(flaggedNoExpiry, now), isFalse);
-    });
+    test(
+      'Post with isPromoted=true but null expiry is NOT treated as active',
+      () {
+        // Matches the new strict rule: promotionExpiry != null required
+        final flaggedNoExpiry = makePost(
+          'flagged',
+          isPromoted: true,
+          expiry: null,
+        );
+        final regular = makePost('regular');
+        // Neither is active since flaggedNoExpiry has no expiry
+        final sorted = sortFeed([regular, flaggedNoExpiry], now);
+        // Both non-active, order determined by createdAt; same date so stable
+        expect(sorted, isNotEmpty);
+        // The important thing: flaggedNoExpiry is NOT treated as promoted
+        expect(isActive(flaggedNoExpiry, now), isFalse);
+      },
+    );
   });
 
   // ─────────────────────────────────────────────────────────────────────────

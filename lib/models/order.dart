@@ -13,7 +13,6 @@
 //   cancelled → (terminal)
 //   refunded  → (terminal)
 
-import 'dart:convert';
 import 'product.dart';
 
 // ─── CartItem ────────────────────────────────────────────────────────────────
@@ -22,9 +21,9 @@ import 'product.dart';
 // Items with the same product but different creator/post are SEPARATE lines.
 
 class CartItem {
-  final String cartItemId;   // Unique within the cart for stable identity
-  final Product product;     // Snapshot of product at add-time
-  final int quantity;        // Positive integer
+  final String cartItemId; // Unique within the cart for stable identity
+  final Product product; // Snapshot of product at add-time
+  final int quantity; // Positive integer
   final String? referrerCreatorId;
   final String? referrerPostId;
 
@@ -40,28 +39,28 @@ class CartItem {
   int get totalPaise => product.pricePaise * quantity;
 
   CartItem copyWith({int? quantity}) => CartItem(
-        cartItemId: cartItemId,
-        product: product,
-        quantity: quantity ?? this.quantity,
-        referrerCreatorId: referrerCreatorId,
-        referrerPostId: referrerPostId,
-      );
+    cartItemId: cartItemId,
+    product: product,
+    quantity: quantity ?? this.quantity,
+    referrerCreatorId: referrerCreatorId,
+    referrerPostId: referrerPostId,
+  );
 
   Map<String, dynamic> toJson() => {
-        'cartItemId': cartItemId,
-        'product': product.toJson(),
-        'quantity': quantity,
-        'referrerCreatorId': referrerCreatorId,
-        'referrerPostId': referrerPostId,
-      };
+    'cartItemId': cartItemId,
+    'product': product.toJson(),
+    'quantity': quantity,
+    'referrerCreatorId': referrerCreatorId,
+    'referrerPostId': referrerPostId,
+  };
 
   factory CartItem.fromJson(Map<String, dynamic> json) => CartItem(
-        cartItemId: json['cartItemId'] as String,
-        product: Product.fromJson(json['product'] as Map<String, dynamic>),
-        quantity: json['quantity'] as int,
-        referrerCreatorId: json['referrerCreatorId'] as String?,
-        referrerPostId: json['referrerPostId'] as String?,
-      );
+    cartItemId: json['cartItemId'] as String,
+    product: Product.fromJson(json['product'] as Map<String, dynamic>),
+    quantity: json['quantity'] as int,
+    referrerCreatorId: json['referrerCreatorId'] as String?,
+    referrerPostId: json['referrerPostId'] as String?,
+  );
 }
 
 // ─── OrderItem ───────────────────────────────────────────────────────────────
@@ -71,11 +70,11 @@ class CartItem {
 class OrderItem {
   final String productId;
   final String productName;
-  final int pricePaise;          // Snapshot of price at purchase time
+  final int pricePaise; // Snapshot of price at purchase time
   final int quantity;
   final String? referrerCreatorId;
   final String? referrerPostId;
-  final double commissionRate;   // Clamped to 0.05–0.15 at order creation
+  final double commissionRate; // Clamped to 0.05–0.15 at order creation
 
   OrderItem({
     required this.productId,
@@ -95,34 +94,34 @@ class OrderItem {
   int get calculatedCommissionPaise => (totalPaise * commissionRate).round();
 
   Map<String, dynamic> toJson() => {
-        'productId': productId,
-        'productName': productName,
-        'pricePaise': pricePaise,
-        'quantity': quantity,
-        'referrerCreatorId': referrerCreatorId,
-        'referrerPostId': referrerPostId,
-        'commissionRate': commissionRate,
-      };
+    'productId': productId,
+    'productName': productName,
+    'pricePaise': pricePaise,
+    'quantity': quantity,
+    'referrerCreatorId': referrerCreatorId,
+    'referrerPostId': referrerPostId,
+    'commissionRate': commissionRate,
+  };
 
   factory OrderItem.fromJson(Map<String, dynamic> json) => OrderItem(
-        productId: json['productId'] as String,
-        productName: json['productName'] as String,
-        pricePaise: json['pricePaise'] as int,
-        quantity: json['quantity'] as int,
-        referrerCreatorId: json['referrerCreatorId'] as String?,
-        referrerPostId: json['referrerPostId'] as String?,
-        commissionRate: (json['commissionRate'] as num).toDouble(),
-      );
+    productId: json['productId'] as String,
+    productName: json['productName'] as String,
+    pricePaise: json['pricePaise'] as int,
+    quantity: json['quantity'] as int,
+    referrerCreatorId: json['referrerCreatorId'] as String?,
+    referrerPostId: json['referrerPostId'] as String?,
+    commissionRate: (json['commissionRate'] as num).toDouble(),
+  );
 }
 
 // ─── OrderStatus ─────────────────────────────────────────────────────────────
 
 enum OrderStatus {
-  pending,   // Order created but not yet paid
-  paid,      // Demo payment succeeded; awaiting fulfilment
+  pending, // Order created but not yet paid
+  paid, // Demo payment succeeded; awaiting fulfilment
   completed, // Admin marked as delivered / fulfilled
   cancelled, // Payment failed or explicitly cancelled (terminal)
-  refunded,  // Whole-order refund issued (terminal)
+  refunded, // Whole-order refund issued (terminal)
 }
 
 extension OrderStatusExtension on OrderStatus {
@@ -146,9 +145,10 @@ extension OrderStatusExtension on OrderStatus {
     }
   }
 
-  static OrderStatus fromString(String s) =>
-      OrderStatus.values.firstWhere((e) => e.name == s,
-          orElse: () => OrderStatus.pending);
+  static OrderStatus fromString(String s) => OrderStatus.values.firstWhere(
+    (e) => e.name == s,
+    orElse: () => OrderStatus.pending,
+  );
 }
 
 // ─── Order ───────────────────────────────────────────────────────────────────
@@ -156,12 +156,12 @@ extension OrderStatusExtension on OrderStatus {
 
 class Order {
   final String id;
-  final String idempotencyKey;  // Stable key preventing duplicate orders
+  final String idempotencyKey; // Stable key preventing duplicate orders
   final String buyerUserId;
   final String buyerName;
   final List<OrderItem> items;
-  final int totalPaise;          // Sum of item totals at purchase time
-  final String shippingAddress;  // Plain formatted string (no PII logged)
+  final int totalPaise; // Sum of item totals at purchase time
+  final String shippingAddress; // Plain formatted string (no PII logged)
   final OrderStatus status;
   final DateTime createdAt;
 
@@ -178,40 +178,40 @@ class Order {
   });
 
   Order copyWith({OrderStatus? status}) => Order(
-        id: id,
-        idempotencyKey: idempotencyKey,
-        buyerUserId: buyerUserId,
-        buyerName: buyerName,
-        items: items,
-        totalPaise: totalPaise,
-        shippingAddress: shippingAddress,
-        status: status ?? this.status,
-        createdAt: createdAt,
-      );
+    id: id,
+    idempotencyKey: idempotencyKey,
+    buyerUserId: buyerUserId,
+    buyerName: buyerName,
+    items: items,
+    totalPaise: totalPaise,
+    shippingAddress: shippingAddress,
+    status: status ?? this.status,
+    createdAt: createdAt,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'idempotencyKey': idempotencyKey,
-        'buyerUserId': buyerUserId,
-        'buyerName': buyerName,
-        'items': items.map((i) => i.toJson()).toList(),
-        'totalPaise': totalPaise,
-        'shippingAddress': shippingAddress,
-        'status': status.name,
-        'createdAt': createdAt.toIso8601String(),
-      };
+    'id': id,
+    'idempotencyKey': idempotencyKey,
+    'buyerUserId': buyerUserId,
+    'buyerName': buyerName,
+    'items': items.map((i) => i.toJson()).toList(),
+    'totalPaise': totalPaise,
+    'shippingAddress': shippingAddress,
+    'status': status.name,
+    'createdAt': createdAt.toIso8601String(),
+  };
 
   factory Order.fromJson(Map<String, dynamic> json) => Order(
-        id: json['id'] as String,
-        idempotencyKey: json['idempotencyKey'] as String,
-        buyerUserId: json['buyerUserId'] as String,
-        buyerName: json['buyerName'] as String,
-        items: (json['items'] as List)
-            .map((e) => OrderItem.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        totalPaise: json['totalPaise'] as int,
-        shippingAddress: json['shippingAddress'] as String,
-        status: OrderStatusExtension.fromString(json['status'] as String),
-        createdAt: DateTime.parse(json['createdAt'] as String),
-      );
+    id: json['id'] as String,
+    idempotencyKey: json['idempotencyKey'] as String,
+    buyerUserId: json['buyerUserId'] as String,
+    buyerName: json['buyerName'] as String,
+    items: (json['items'] as List)
+        .map((e) => OrderItem.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    totalPaise: json['totalPaise'] as int,
+    shippingAddress: json['shippingAddress'] as String,
+    status: OrderStatusExtension.fromString(json['status'] as String),
+    createdAt: DateTime.parse(json['createdAt'] as String),
+  );
 }

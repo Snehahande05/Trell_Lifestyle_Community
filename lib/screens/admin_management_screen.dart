@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/app_state_provider.dart';
 import '../models/user.dart';
 import '../models/order.dart';
@@ -18,8 +19,11 @@ class _AdminManagementScreenState extends State<AdminManagementScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  final TextEditingController _revShareCreatorController = TextEditingController(text: 'u_creator1');
-  final TextEditingController _revShareBudgetController = TextEditingController(text: '5000');
+  final TextEditingController _revShareCreatorController =
+      TextEditingController(text: 'u_creator1');
+  final TextEditingController _revShareBudgetController = TextEditingController(
+    text: '5000',
+  );
   double _revShareRate = 0.20; // 20% default
 
   @override
@@ -46,22 +50,35 @@ class _AdminManagementScreenState extends State<AdminManagementScreen>
         backgroundColor: Colors.black,
         appBar: AppBar(
           backgroundColor: Colors.grey.shade900,
-          title: const Text('Admin Portal Restricted', style: TextStyle(color: Colors.white)),
+          title: const Text(
+            'Admin Portal Restricted',
+            style: TextStyle(color: Colors.white),
+          ),
         ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.admin_panel_settings_outlined, size: 64, color: Colors.redAccent),
+              const Icon(
+                Icons.admin_panel_settings_outlined,
+                size: 64,
+                color: Colors.redAccent,
+              ),
               const SizedBox(height: 12),
-              const Text('Restricted Access - Admin Account Required', style: TextStyle(color: Colors.white, fontSize: 16)),
+              const Text(
+                'Restricted Access - Admin Account Required',
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
               const SizedBox(height: 12),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
                 onPressed: () {
                   provider.switchDemoUser('u_admin');
                 },
-                child: const Text('Switch to Demo Admin Account', style: TextStyle(color: Colors.white)),
+                child: const Text(
+                  'Switch to Demo Admin Account',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ],
           ),
@@ -77,7 +94,10 @@ class _AdminManagementScreenState extends State<AdminManagementScreen>
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.grey.shade900,
-        title: const Text('Admin Platform Management', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Admin Platform Management',
+          style: TextStyle(color: Colors.white),
+        ),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.pinkAccent,
@@ -96,7 +116,12 @@ class _AdminManagementScreenState extends State<AdminManagementScreen>
         children: [
           // 1. Order Completion & Commission Release Management
           allOrders.isEmpty
-              ? const Center(child: Text('No orders to manage.', style: TextStyle(color: Colors.white54)))
+              ? const Center(
+                  child: Text(
+                    'No orders to manage.',
+                    style: TextStyle(color: Colors.white54),
+                  ),
+                )
               : ListView.builder(
                   padding: const EdgeInsets.all(12),
                   itemCount: allOrders.length,
@@ -113,37 +138,92 @@ class _AdminManagementScreenState extends State<AdminManagementScreen>
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('Order: ${order.id}', style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
-                                Text('Status: ${order.status.name.toUpperCase()}', style: const TextStyle(color: Colors.greenAccent, fontSize: 12)),
+                                Text(
+                                  'Order: ${order.id}',
+                                  style: const TextStyle(
+                                    color: Colors.amber,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  'Status: ${order.status.name.toUpperCase()}',
+                                  style: const TextStyle(
+                                    color: Colors.greenAccent,
+                                    fontSize: 12,
+                                  ),
+                                ),
                               ],
                             ),
                             const SizedBox(height: 6),
-                            Text('Buyer: ${order.buyerName} • Amount: ${CurrencyUtils.formatPaise(order.totalPaise)}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                            Text(
+                              'Buyer: ${order.buyerName} • Amount: ${CurrencyUtils.formatPaise(order.totalPaise)}',
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
                             const SizedBox(height: 8),
                             if (order.status == OrderStatus.paid)
                               Row(
                                 children: [
                                   ElevatedButton.icon(
-                                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.green,
+                                    ),
                                     onPressed: () async {
-                                      await provider.updateOrderStatus(order.id, OrderStatus.completed);
+                                      await provider.updateOrderStatus(
+                                        order.id,
+                                        OrderStatus.completed,
+                                      );
                                       if (context.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text('Order Completed! Attributed Creator Commission Released to Available Balance.')),
-                                        );
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  'Order Completed! Attributed Creator Commission Released to Available Balance.',
+                                                ),
+                                              ),
+                                            );
                                       }
                                     },
-                                    icon: const Icon(Icons.check, size: 16, color: Colors.white),
-                                    label: const Text('Complete Order & Release Comm', style: TextStyle(color: Colors.white, fontSize: 11)),
+                                    icon: const Icon(
+                                      Icons.check,
+                                      size: 16,
+                                      color: Colors.white,
+                                    ),
+                                    label: const Text(
+                                      'Complete Order & Release Comm',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 11,
+                                      ),
+                                    ),
                                   ),
                                   const SizedBox(width: 8),
                                   OutlinedButton.icon(
-                                    style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.redAccent)),
+                                    style: OutlinedButton.styleFrom(
+                                      side: const BorderSide(
+                                        color: Colors.redAccent,
+                                      ),
+                                    ),
                                     onPressed: () async {
-                                      await provider.updateOrderStatus(order.id, OrderStatus.cancelled);
+                                      await provider.updateOrderStatus(
+                                        order.id,
+                                        OrderStatus.cancelled,
+                                      );
                                     },
-                                    icon: const Icon(Icons.cancel, size: 16, color: Colors.redAccent),
-                                    label: const Text('Cancel & Reverse', style: TextStyle(color: Colors.redAccent, fontSize: 11)),
+                                    icon: const Icon(
+                                      Icons.cancel,
+                                      size: 16,
+                                      color: Colors.redAccent,
+                                    ),
+                                    label: const Text(
+                                      'Cancel & Reverse',
+                                      style: TextStyle(
+                                        color: Colors.redAccent,
+                                        fontSize: 11,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -156,7 +236,12 @@ class _AdminManagementScreenState extends State<AdminManagementScreen>
 
           // 2. Withdrawal Request Payout Approval/Rejection
           withdrawals.isEmpty
-              ? const Center(child: Text('No withdrawal requests.', style: TextStyle(color: Colors.white54)))
+              ? const Center(
+                  child: Text(
+                    'No withdrawal requests.',
+                    style: TextStyle(color: Colors.white54),
+                  ),
+                )
               : ListView.builder(
                   padding: const EdgeInsets.all(12),
                   itemCount: withdrawals.length,
@@ -166,22 +251,47 @@ class _AdminManagementScreenState extends State<AdminManagementScreen>
                       color: Colors.grey.shade900,
                       margin: const EdgeInsets.only(bottom: 12),
                       child: ListTile(
-                        title: Text('${req.creatorName} - ${CurrencyUtils.formatPaise(req.amountPaise)}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                        subtitle: Text('UPI: ${req.upiIdOrBank}\nStatus: ${req.status.name.toUpperCase()}', style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                        title: Text(
+                          '${req.creatorName} - ${CurrencyUtils.formatPaise(req.amountPaise)}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'UPI: ${req.upiIdOrBank}\nStatus: ${req.status.name.toUpperCase()}',
+                          style: const TextStyle(
+                            color: Colors.white54,
+                            fontSize: 12,
+                          ),
+                        ),
                         trailing: req.status == WithdrawalStatus.pending
                             ? Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   IconButton(
-                                    icon: const Icon(Icons.check_circle, color: Colors.greenAccent),
+                                    icon: const Icon(
+                                      Icons.check_circle,
+                                      color: Colors.greenAccent,
+                                    ),
                                     onPressed: () async {
-                                      await provider.processWithdrawal(req.id, true);
+                                      await provider.processWithdrawal(
+                                        req.id,
+                                        true,
+                                      );
                                     },
                                   ),
                                   IconButton(
-                                    icon: const Icon(Icons.cancel, color: Colors.redAccent),
+                                    icon: const Icon(
+                                      Icons.cancel,
+                                      color: Colors.redAccent,
+                                    ),
                                     onPressed: () async {
-                                      await provider.processWithdrawal(req.id, false, reason: 'Admin rejected');
+                                      await provider.processWithdrawal(
+                                        req.id,
+                                        false,
+                                        reason: 'Admin rejected',
+                                      );
                                     },
                                   ),
                                 ],
@@ -194,7 +304,12 @@ class _AdminManagementScreenState extends State<AdminManagementScreen>
 
           // 3. Creator Verification Review Section (Requirement #9)
           verifications.isEmpty
-              ? const Center(child: Text('No creator applications.', style: TextStyle(color: Colors.white54)))
+              ? const Center(
+                  child: Text(
+                    'No creator applications.',
+                    style: TextStyle(color: Colors.white54),
+                  ),
+                )
               : ListView.builder(
                   padding: const EdgeInsets.all(12),
                   itemCount: verifications.length,
@@ -208,34 +323,65 @@ class _AdminManagementScreenState extends State<AdminManagementScreen>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(app.creatorName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                            Text(
+                              app.creatorName,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
                             const SizedBox(height: 4),
-                            Text('Category: ${app.category} • Social: ${app.socialLink}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                            Text(
+                              'Category: ${app.category} • Social: ${app.socialLink}',
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
                             const SizedBox(height: 4),
-                            Text('Reason: ${app.reason}', style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                            Text(
+                              'Reason: ${app.reason}',
+                              style: const TextStyle(
+                                color: Colors.white54,
+                                fontSize: 12,
+                              ),
+                            ),
                             const SizedBox(height: 4),
                             Text(
                               'Submitted: ${app.submittedAt.toLocal().toString().substring(0, 16)}',
-                              style: const TextStyle(color: Colors.white38, fontSize: 11),
+                              style: const TextStyle(
+                                color: Colors.white38,
+                                fontSize: 11,
+                              ),
                             ),
                             if (app.decidedAt != null) ...[
                               const SizedBox(height: 2),
                               Text(
                                 'Decision: ${app.decidedAt!.toLocal().toString().substring(0, 16)} by admin',
-                                style: const TextStyle(color: Colors.white38, fontSize: 11),
+                                style: const TextStyle(
+                                  color: Colors.white38,
+                                  fontSize: 11,
+                                ),
                               ),
                             ],
-                            if (app.rejectionReason != null && app.rejectionReason!.isNotEmpty) ...[
+                            if (app.rejectionReason != null &&
+                                app.rejectionReason!.isNotEmpty) ...[
                               const SizedBox(height: 4),
                               Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: Colors.red.shade900.withValues(alpha: 0.3),
+                                  color: Colors.red.shade900.withValues(
+                                    alpha: 0.3,
+                                  ),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
                                   'Rejection Reason: ${app.rejectionReason}',
-                                  style: const TextStyle(color: Colors.redAccent, fontSize: 12),
+                                  style: const TextStyle(
+                                    color: Colors.redAccent,
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ),
                             ],
@@ -244,70 +390,138 @@ class _AdminManagementScreenState extends State<AdminManagementScreen>
                               Row(
                                 children: [
                                   ElevatedButton(
-                                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.green,
+                                    ),
                                     onPressed: () async {
-                                      await provider.processVerification(app.id, true);
+                                      await provider.processVerification(
+                                        app.id,
+                                        true,
+                                      );
                                       if (context.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text('Creator badge approved!'), backgroundColor: Colors.green),
-                                        );
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  'Creator badge approved!',
+                                                ),
+                                                backgroundColor: Colors.green,
+                                              ),
+                                            );
                                       }
                                     },
-                                    child: const Text('Approve Badge ✔️', style: TextStyle(color: Colors.white)),
+                                    child: const Text(
+                                      'Approve Badge ✔️',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
                                   ),
                                   const SizedBox(width: 8),
                                   OutlinedButton(
-                                    style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.redAccent)),
+                                    style: OutlinedButton.styleFrom(
+                                      side: const BorderSide(
+                                        color: Colors.redAccent,
+                                      ),
+                                    ),
                                     onPressed: () async {
                                       // Require rejection reason
-                                      final TextEditingController reasonCtrl = TextEditingController();
-                                      final String? reason = await showDialog<String>(
+                                      final TextEditingController reasonCtrl =
+                                          TextEditingController();
+                                      final String?
+                                      reason = await showDialog<String>(
                                         context: context,
                                         builder: (dialogCtx) => AlertDialog(
                                           backgroundColor: Colors.grey.shade900,
-                                          title: const Text('Rejection Reason', style: TextStyle(color: Colors.white)),
+                                          title: const Text(
+                                            'Rejection Reason',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
                                           content: TextField(
                                             controller: reasonCtrl,
-                                            style: const TextStyle(color: Colors.white),
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                            ),
                                             maxLines: 3,
                                             decoration: const InputDecoration(
                                               hintText: 'Required: explain why the application is rejected',
-                                              hintStyle: TextStyle(color: Colors.white38),
+                                              hintStyle: TextStyle(
+                                                color: Colors.white38,
+                                              ),
                                               border: OutlineInputBorder(),
                                             ),
                                           ),
                                           actions: [
                                             TextButton(
-                                              onPressed: () => Navigator.pop(dialogCtx),
-                                              child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+                                              onPressed: () =>
+                                                  Navigator.pop(dialogCtx),
+                                              child: const Text(
+                                                'Cancel',
+                                                style: TextStyle(
+                                                  color: Colors.white54,
+                                                ),
+                                              ),
                                             ),
                                             ElevatedButton(
-                                              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor:
+                                                    Colors.redAccent,
+                                              ),
                                               onPressed: () {
-                                                if (reasonCtrl.text.trim().isNotEmpty) {
-                                                  Navigator.pop(dialogCtx, reasonCtrl.text.trim());
+                                                if (reasonCtrl.text
+                                                    .trim()
+                                                    .isNotEmpty) {
+                                                  Navigator.pop(
+                                                    dialogCtx,
+                                                    reasonCtrl.text.trim(),
+                                                  );
                                                 }
                                               },
-                                              child: const Text('Confirm Reject', style: TextStyle(color: Colors.white)),
+                                              child: const Text(
+                                                'Confirm Reject',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                ),
+                                              ),
                                             ),
                                           ],
                                         ),
                                       );
                                       if (reason != null && context.mounted) {
-                                        await provider.processVerification(app.id, false, rejectionReason: reason);
+                                        await provider.processVerification(
+                                          app.id,
+                                          false,
+                                          rejectionReason: reason,
+                                        );
                                         if (context.mounted) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(content: Text('Application rejected: $reason'), backgroundColor: Colors.orange),
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                'Application rejected: $reason',
+                                              ),
+                                              backgroundColor: Colors.orange,
+                                            ),
                                           );
                                         }
                                       }
                                     },
-                                    child: const Text('Reject', style: TextStyle(color: Colors.redAccent)),
+                                    child: const Text(
+                                      'Reject',
+                                      style: TextStyle(color: Colors.redAccent),
+                                    ),
                                   ),
                                 ],
                               )
                             else
-                              Text('Status: ${app.status.name.toUpperCase()}', style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
+                              Text(
+                                'Status: ${app.status.name.toUpperCase()}',
+                                style: const TextStyle(
+                                  color: Colors.amber,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                           ],
                         ),
                       ),
@@ -324,14 +538,20 @@ class _AdminManagementScreenState extends State<AdminManagementScreen>
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.purple.shade900.withOpacity(0.5),
+                    color: Colors.purple.shade900.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.purpleAccent),
                   ),
                   child: const Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Verified Creator Revenue Share (Up to 30%)', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      Text(
+                        'Verified Creator Revenue Share (Up to 30%)',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       SizedBox(height: 4),
                       Text(
                         'Project Assumption: Illustrative program separate from product affiliate commission. Admin records demo platform revenue allocation with a rate capped at 30%.',
@@ -364,7 +584,13 @@ class _AdminManagementScreenState extends State<AdminManagementScreen>
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    Text('Revenue Share Rate: ${(_revShareRate * 100).toInt()}% (Cap: 30%)', style: const TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
+                    Text(
+                      'Revenue Share Rate: ${(_revShareRate * 100).toInt()}% (Cap: 30%)',
+                      style: const TextStyle(
+                        color: Colors.amber,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
                 Slider(
@@ -384,11 +610,16 @@ class _AdminManagementScreenState extends State<AdminManagementScreen>
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.pinkAccent),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.pinkAccent,
+                    ),
                     onPressed: () async {
-                      double? amountRupees = double.tryParse(_revShareBudgetController.text.trim());
+                      double? amountRupees = double.tryParse(
+                        _revShareBudgetController.text.trim(),
+                      );
                       if (amountRupees != null && amountRupees > 0) {
                         int sourcePaise = (amountRupees * 100).round();
+                        final messenger = ScaffoldMessenger.of(context);
                         await provider.recordRevenueShare(
                           _revShareCreatorController.text.trim(),
                           sourcePaise,
@@ -396,14 +627,23 @@ class _AdminManagementScreenState extends State<AdminManagementScreen>
                           'Platform Revenue Allocation Campaign',
                         );
                         if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Revenue Share Record created!'), backgroundColor: Colors.green),
+                          messenger.showSnackBar(
+                            const SnackBar(
+                              content: Text('Revenue Share Record created!'),
+                              backgroundColor: Colors.green,
+                            ),
                           );
                         }
                       }
                     },
                     icon: const Icon(Icons.add, color: Colors.white),
-                    label: const Text('Record Revenue Share Allocation', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    label: const Text(
+                      'Record Revenue Share Allocation',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
               ],

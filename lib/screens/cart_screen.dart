@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/app_state_provider.dart';
 import '../models/order.dart';
 import '../utils/currency_utils.dart';
@@ -12,12 +13,22 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  final TextEditingController _nameController = TextEditingController(text: 'John Doe');
-  final TextEditingController _addressController = TextEditingController(text: '402 Sunrise Heights');
-  final TextEditingController _cityController = TextEditingController(text: 'Mumbai');
-  final TextEditingController _pinController = TextEditingController(text: '400050');
-  final TextEditingController _phoneController = TextEditingController(text: '9876543210');
-  
+  final TextEditingController _nameController = TextEditingController(
+    text: 'John Doe',
+  );
+  final TextEditingController _addressController = TextEditingController(
+    text: '402 Sunrise Heights',
+  );
+  final TextEditingController _cityController = TextEditingController(
+    text: 'Mumbai',
+  );
+  final TextEditingController _pinController = TextEditingController(
+    text: '400050',
+  );
+  final TextEditingController _phoneController = TextEditingController(
+    text: '9876543210',
+  );
+
   final _formKey = GlobalKey<FormState>();
   bool _isProcessingCheckout = false;
 
@@ -31,13 +42,16 @@ class _CartScreenState extends State<CartScreen> {
     super.dispose();
   }
 
-  Future<void> _processDemoPayment(AppStateProvider provider, bool simulateSuccess) async {
+  Future<void> _processDemoPayment(
+    AppStateProvider provider,
+    bool simulateSuccess,
+  ) async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
-    
-    final fullAddress = '${_nameController.text.trim()}, ${_addressController.text.trim()}, ${_cityController.text.trim()}, PIN: ${_pinController.text.trim()}, Phone: ${_phoneController.text.trim()}';
 
+    final fullAddress =
+        '${_nameController.text.trim()}, ${_addressController.text.trim()}, ${_cityController.text.trim()}, PIN: ${_pinController.text.trim()}, Phone: ${_phoneController.text.trim()}';
 
     setState(() {
       _isProcessingCheckout = true;
@@ -61,7 +75,9 @@ class _CartScreenState extends State<CartScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('❌ Demo payment cancelled/failed. No order or commission created.'),
+            content: Text(
+              '❌ Demo payment cancelled/failed. No order or commission created.',
+            ),
             backgroundColor: Colors.redAccent,
           ),
         );
@@ -86,12 +102,27 @@ class _CartScreenState extends State<CartScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Order ID: ${order.id}', style: const TextStyle(color: Colors.amber, fontSize: 13)),
+            Text(
+              'Order ID: ${order.id}',
+              style: const TextStyle(color: Colors.amber, fontSize: 13),
+            ),
             const SizedBox(height: 8),
-            Text('Total Amount: ${CurrencyUtils.formatPaise(order.totalPaise)}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            Text(
+              'Total Amount: ${CurrencyUtils.formatPaise(order.totalPaise)}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 8),
-            const Text('Shipping Address:', style: TextStyle(color: Colors.white70, fontSize: 12)),
-            Text(order.shippingAddress, style: const TextStyle(color: Colors.white, fontSize: 13)),
+            const Text(
+              'Shipping Address:',
+              style: TextStyle(color: Colors.white70, fontSize: 12),
+            ),
+            Text(
+              order.shippingAddress,
+              style: const TextStyle(color: Colors.white, fontSize: 13),
+            ),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(8),
@@ -113,7 +144,10 @@ class _CartScreenState extends State<CartScreen> {
               Navigator.pop(ctx); // Close dialog
               Navigator.pop(context); // Back to previous screen
             },
-            child: const Text('Continue Shopping', style: TextStyle(color: Colors.white)),
+            child: const Text(
+              'Continue Shopping',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -129,16 +163,26 @@ class _CartScreenState extends State<CartScreen> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.grey.shade900,
-        title: Text('Shopping Cart (${cart.length})', style: const TextStyle(color: Colors.white)),
+        title: Text(
+          'Shopping Cart (${cart.length})',
+          style: const TextStyle(color: Colors.white),
+        ),
       ),
       body: cart.isEmpty
           ? const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.remove_shopping_cart, size: 64, color: Colors.white38),
+                  Icon(
+                    Icons.remove_shopping_cart,
+                    size: 64,
+                    color: Colors.white38,
+                  ),
                   SizedBox(height: 12),
-                  Text('Your cart is empty', style: TextStyle(color: Colors.white70, fontSize: 16)),
+                  Text(
+                    'Your cart is empty',
+                    style: TextStyle(color: Colors.white70, fontSize: 16),
+                  ),
                 ],
               ),
             )
@@ -171,11 +215,14 @@ class _CartScreenState extends State<CartScreen> {
                                 width: 60,
                                 height: 60,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Container(
+                                errorBuilder: (_, _, _) => Container(
                                   width: 60,
                                   height: 60,
                                   color: Colors.grey.shade800,
-                                  child: const Icon(Icons.shopping_bag, color: Colors.white),
+                                  child: const Icon(
+                                    Icons.shopping_bag,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                             ),
@@ -186,17 +233,29 @@ class _CartScreenState extends State<CartScreen> {
                                 children: [
                                   Text(
                                     item.product.name,
-                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    CurrencyUtils.formatPaise(item.product.pricePaise),
-                                    style: const TextStyle(color: Colors.pinkAccent, fontWeight: FontWeight.bold),
+                                    CurrencyUtils.formatPaise(
+                                      item.product.pricePaise,
+                                    ),
+                                    style: const TextStyle(
+                                      color: Colors.pinkAccent,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                   if (item.referrerCreatorId != null)
                                     Text(
                                       'Attributed to Creator: ${item.referrerCreatorId}',
-                                      style: const TextStyle(color: Colors.amber, fontSize: 11),
+                                      style: const TextStyle(
+                                        color: Colors.amber,
+                                        fontSize: 11,
+                                      ),
                                     ),
                                 ],
                               ),
@@ -205,16 +264,38 @@ class _CartScreenState extends State<CartScreen> {
                             Row(
                               children: [
                                 IconButton(
-                                  icon: const Icon(Icons.remove_circle_outline, color: Colors.white70),
+                                  icon: const Icon(
+                                    Icons.remove_circle_outline,
+                                    color: Colors.white70,
+                                  ),
                                   onPressed: () {
-                                    provider.updateCartQuantity(item.product.id, item.referrerCreatorId, item.referrerPostId, item.quantity - 1);
+                                    provider.updateCartQuantity(
+                                      item.product.id,
+                                      item.referrerCreatorId,
+                                      item.referrerPostId,
+                                      item.quantity - 1,
+                                    );
                                   },
                                 ),
-                                Text('${item.quantity}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                Text(
+                                  '${item.quantity}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                                 IconButton(
-                                  icon: const Icon(Icons.add_circle_outline, color: Colors.white70),
+                                  icon: const Icon(
+                                    Icons.add_circle_outline,
+                                    color: Colors.white70,
+                                  ),
                                   onPressed: () {
-                                    provider.updateCartQuantity(item.product.id, item.referrerCreatorId, item.referrerPostId, item.quantity + 1);
+                                    provider.updateCartQuantity(
+                                      item.product.id,
+                                      item.referrerCreatorId,
+                                      item.referrerPostId,
+                                      item.quantity + 1,
+                                    );
                                   },
                                 ),
                               ],
@@ -227,7 +308,14 @@ class _CartScreenState extends State<CartScreen> {
                   const SizedBox(height: 16),
 
                   // Shipping Address Validation Section
-                  const Text('Delivery Address', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                  const Text(
+                    'Delivery Address',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   Form(
                     key: _formKey,
@@ -236,32 +324,58 @@ class _CartScreenState extends State<CartScreen> {
                         TextFormField(
                           controller: _nameController,
                           style: const TextStyle(color: Colors.white),
-                          decoration: const InputDecoration(labelText: 'Recipient Name', filled: true, fillColor: Colors.black26),
-                          validator: (v) => v == null || v.trim().isEmpty ? 'Name required' : null,
+                          decoration: const InputDecoration(
+                            labelText: 'Recipient Name',
+                            filled: true,
+                            fillColor: Colors.black26,
+                          ),
+                          validator: (v) => v == null || v.trim().isEmpty
+                              ? 'Name required'
+                              : null,
                         ),
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _addressController,
                           style: const TextStyle(color: Colors.white),
-                          decoration: const InputDecoration(labelText: 'Address', filled: true, fillColor: Colors.black26),
-                          validator: (v) => v == null || v.trim().isEmpty ? 'Address required' : null,
+                          decoration: const InputDecoration(
+                            labelText: 'Address',
+                            filled: true,
+                            fillColor: Colors.black26,
+                          ),
+                          validator: (v) => v == null || v.trim().isEmpty
+                              ? 'Address required'
+                              : null,
                         ),
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _cityController,
                           style: const TextStyle(color: Colors.white),
-                          decoration: const InputDecoration(labelText: 'City', filled: true, fillColor: Colors.black26),
-                          validator: (v) => v == null || v.trim().isEmpty ? 'City required' : null,
+                          decoration: const InputDecoration(
+                            labelText: 'City',
+                            filled: true,
+                            fillColor: Colors.black26,
+                          ),
+                          validator: (v) => v == null || v.trim().isEmpty
+                              ? 'City required'
+                              : null,
                         ),
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _pinController,
                           style: const TextStyle(color: Colors.white),
-                          decoration: const InputDecoration(labelText: 'PIN Code', filled: true, fillColor: Colors.black26),
+                          decoration: const InputDecoration(
+                            labelText: 'PIN Code',
+                            filled: true,
+                            fillColor: Colors.black26,
+                          ),
                           keyboardType: TextInputType.number,
                           validator: (v) {
-                            if (v == null || v.trim().isEmpty) return 'PIN Code required';
-                            if (!RegExp(r'^\d{6}$').hasMatch(v.trim())) return 'Enter a valid 6-digit PIN';
+                            if (v == null || v.trim().isEmpty) {
+                              return 'PIN Code required';
+                            }
+                            if (!RegExp(r'^\d{6}$').hasMatch(v.trim())) {
+                              return 'Enter a valid 6-digit PIN';
+                            }
                             return null;
                           },
                         ),
@@ -269,12 +383,20 @@ class _CartScreenState extends State<CartScreen> {
                         TextFormField(
                           controller: _phoneController,
                           style: const TextStyle(color: Colors.white),
-                          decoration: const InputDecoration(labelText: 'Mobile Number (+91 is assumed)', filled: true, fillColor: Colors.black26),
+                          decoration: const InputDecoration(
+                            labelText: 'Mobile Number (+91 is assumed)',
+                            filled: true,
+                            fillColor: Colors.black26,
+                          ),
                           keyboardType: TextInputType.phone,
                           validator: (v) {
-                            if (v == null || v.trim().isEmpty) return 'Mobile Number required';
+                            if (v == null || v.trim().isEmpty) {
+                              return 'Mobile Number required';
+                            }
                             String clean = v.trim().replaceAll('+91', '');
-                            if (!RegExp(r'^\d{10}$').hasMatch(clean)) return 'Enter a valid 10-digit mobile number';
+                            if (!RegExp(r'^\d{10}$').hasMatch(clean)) {
+                              return 'Enter a valid 10-digit mobile number';
+                            }
                             return null;
                           },
                         ),
@@ -289,35 +411,74 @@ class _CartScreenState extends State<CartScreen> {
                     decoration: BoxDecoration(
                       color: Colors.grey.shade900,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.pinkAccent.withOpacity(0.5)),
+                      border: Border.all(
+                        color: Colors.pinkAccent.withValues(alpha: 0.5),
+                      ),
                     ),
                     child: Column(
                       children: [
-                        const Text('Order Summary', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                        const Text(
+                          'Order Summary',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
                         const Divider(color: Colors.white24),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Items Subtotal:', style: TextStyle(color: Colors.white70)),
-                            Text(CurrencyUtils.formatPaise(provider.cartTotalPaise), style: const TextStyle(color: Colors.white)),
+                            const Text(
+                              'Items Subtotal:',
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                            Text(
+                              CurrencyUtils.formatPaise(
+                                provider.cartTotalPaise,
+                              ),
+                              style: const TextStyle(color: Colors.white),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 6),
                         const Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Shipping Fee:', style: TextStyle(color: Colors.white70)),
-                            Text('FREE', style: TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold)),
+                            Text(
+                              'Shipping Fee:',
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                            Text(
+                              'FREE',
+                              style: TextStyle(
+                                color: Colors.greenAccent,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ],
                         ),
                         const Divider(color: Colors.white24),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Total Payable:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                            const Text(
+                              'Total Payable:',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
                             Text(
-                              CurrencyUtils.formatPaise(provider.cartTotalPaise),
-                              style: const TextStyle(color: Colors.pinkAccent, fontWeight: FontWeight.bold, fontSize: 18),
+                              CurrencyUtils.formatPaise(
+                                provider.cartTotalPaise,
+                              ),
+                              style: const TextStyle(
+                                color: Colors.pinkAccent,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
                             ),
                           ],
                         ),
@@ -330,7 +491,7 @@ class _CartScreenState extends State<CartScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.amber.shade900.withOpacity(0.3),
+                      color: Colors.amber.shade900.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.amber),
                     ),
@@ -341,7 +502,10 @@ class _CartScreenState extends State<CartScreen> {
                         Expanded(
                           child: Text(
                             'Demo payment — no real money charged.',
-                            style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              color: Colors.amber,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
@@ -350,17 +514,33 @@ class _CartScreenState extends State<CartScreen> {
                   const SizedBox(height: 16),
 
                   _isProcessingCheckout
-                      ? const Center(child: CircularProgressIndicator(color: Colors.pinkAccent))
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.pinkAccent,
+                          ),
+                        )
                       : Column(
                           children: [
                             SizedBox(
                               width: double.infinity,
                               height: 48,
                               child: ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.green.shade700),
-                                onPressed: () => _processDemoPayment(provider, true),
-                                icon: const Icon(Icons.check_circle, color: Colors.white),
-                                label: const Text('Simulate Successful Payment', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green.shade700,
+                                ),
+                                onPressed: () =>
+                                    _processDemoPayment(provider, true),
+                                icon: const Icon(
+                                  Icons.check_circle,
+                                  color: Colors.white,
+                                ),
+                                label: const Text(
+                                  'Simulate Successful Payment',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ),
                             const SizedBox(height: 10),
@@ -368,10 +548,21 @@ class _CartScreenState extends State<CartScreen> {
                               width: double.infinity,
                               height: 44,
                               child: OutlinedButton.icon(
-                                style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.redAccent)),
-                                onPressed: () => _processDemoPayment(provider, false),
-                                icon: const Icon(Icons.cancel, color: Colors.redAccent),
-                                label: const Text('Simulate Failed / Cancelled Payment', style: TextStyle(color: Colors.redAccent)),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(
+                                    color: Colors.redAccent,
+                                  ),
+                                ),
+                                onPressed: () =>
+                                    _processDemoPayment(provider, false),
+                                icon: const Icon(
+                                  Icons.cancel,
+                                  color: Colors.redAccent,
+                                ),
+                                label: const Text(
+                                  'Simulate Failed / Cancelled Payment',
+                                  style: TextStyle(color: Colors.redAccent),
+                                ),
                               ),
                             ),
                           ],

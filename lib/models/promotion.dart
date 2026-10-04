@@ -100,20 +100,21 @@ class PromotionRecord {
 
   // ── Serialization ──────────────────────────────────────────────────────────
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'paymentAttemptId': paymentAttemptId,
-        'postId': postId,
-        'creatorId': creatorId,
-        'packagePricePaise': packagePricePaise,
-        'durationDays': durationDays,
-        'paymentStatus': paymentStatus.index,
-        'activationTime': activationTime?.toUtc().toIso8601String(),
-        'expiryTime': expiryTime?.toUtc().toIso8601String(),
-        'failureReason': failureReason,
-        'createdAt': createdAt.toUtc().toIso8601String(),
-      };
+    'id': id,
+    'paymentAttemptId': paymentAttemptId,
+    'postId': postId,
+    'creatorId': creatorId,
+    'packagePricePaise': packagePricePaise,
+    'durationDays': durationDays,
+    'paymentStatus': paymentStatus.index,
+    'activationTime': activationTime?.toUtc().toIso8601String(),
+    'expiryTime': expiryTime?.toUtc().toIso8601String(),
+    'failureReason': failureReason,
+    'createdAt': createdAt.toUtc().toIso8601String(),
+  };
 
-  factory PromotionRecord.fromJson(Map<String, dynamic> json) => PromotionRecord(
+  factory PromotionRecord.fromJson(Map<String, dynamic> json) =>
+      PromotionRecord(
         id: json['id'] as String,
         paymentAttemptId: json['paymentAttemptId'] as String,
         postId: json['postId'] as String,
@@ -137,18 +138,17 @@ class PromotionRecord {
     DateTime? activationTime,
     DateTime? expiryTime,
     String? failureReason,
-  }) =>
-      PromotionRecord(
-        id: id,
-        paymentAttemptId: paymentAttemptId,
-        postId: postId,
-        creatorId: creatorId,
-        packagePricePaise: packagePricePaise,
-        durationDays: durationDays,
-        paymentStatus: paymentStatus ?? this.paymentStatus,
-        activationTime: activationTime ?? this.activationTime,
-        expiryTime: expiryTime ?? this.expiryTime,
-        failureReason: failureReason ?? this.failureReason,
-        createdAt: createdAt,
-      );
+  }) => PromotionRecord(
+    id: id,
+    paymentAttemptId: paymentAttemptId,
+    postId: postId,
+    creatorId: creatorId,
+    packagePricePaise: packagePricePaise,
+    durationDays: durationDays,
+    paymentStatus: paymentStatus ?? this.paymentStatus,
+    activationTime: activationTime ?? this.activationTime,
+    expiryTime: expiryTime ?? this.expiryTime,
+    failureReason: failureReason ?? this.failureReason,
+    createdAt: createdAt,
+  );
 }

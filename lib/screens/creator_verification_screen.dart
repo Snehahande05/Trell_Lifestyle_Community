@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/app_state_provider.dart';
 import '../models/review_and_verification.dart';
 
@@ -22,14 +23,21 @@ class CreatorVerificationScreen extends StatefulWidget {
   const CreatorVerificationScreen({super.key});
 
   @override
-  State<CreatorVerificationScreen> createState() => _CreatorVerificationScreenState();
+  State<CreatorVerificationScreen> createState() =>
+      _CreatorVerificationScreenState();
 }
 
 class _CreatorVerificationScreenState extends State<CreatorVerificationScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _categoryController = TextEditingController(text: 'Fashion & Beauty');
-  final TextEditingController _socialLinkController = TextEditingController(text: 'https://instagram.com/my_creator_profile');
-  final TextEditingController _reasonController = TextEditingController(text: 'Original lifestyle content creator with regular weekly uploads.');
+  final TextEditingController _categoryController = TextEditingController(
+    text: 'Fashion & Beauty',
+  );
+  final TextEditingController _socialLinkController = TextEditingController(
+    text: 'https://instagram.com/my_creator_profile',
+  );
+  final TextEditingController _reasonController = TextEditingController(
+    text: 'Original lifestyle content creator with regular weekly uploads.',
+  );
 
   bool _isSubmitting = false;
 
@@ -49,7 +57,12 @@ class _CreatorVerificationScreenState extends State<CreatorVerificationScreen> {
     if (user == null) {
       return const Scaffold(
         backgroundColor: Colors.black,
-        body: Center(child: Text('User not selected', style: TextStyle(color: Colors.white))),
+        body: Center(
+          child: Text(
+            'User not selected',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
       );
     }
 
@@ -60,7 +73,10 @@ class _CreatorVerificationScreenState extends State<CreatorVerificationScreen> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.grey.shade900,
-        title: const Text('Creator Verification Badge', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Creator Verification Badge',
+          style: TextStyle(color: Colors.white),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -77,7 +93,9 @@ class _CreatorVerificationScreenState extends State<CreatorVerificationScreen> {
               decoration: BoxDecoration(
                 color: Colors.blueGrey.shade900,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.4)),
+                border: Border.all(
+                  color: Colors.blueAccent.withValues(alpha: 0.4),
+                ),
               ),
               child: const Text(
                 '⚠️ This is a project/demo admin verification, not an external identity check or government verification. '
@@ -89,9 +107,11 @@ class _CreatorVerificationScreenState extends State<CreatorVerificationScreen> {
             const SizedBox(height: 24),
 
             // ── Application form or status detail ────────────────────────────
-            if (!isApproved && (verificationApp == null ||
-                verificationApp.status == VerificationStatus.rejected ||
-                verificationApp.status == VerificationStatus.notApplied)) ...[
+            if (!isApproved &&
+                (verificationApp == null ||
+                    verificationApp.status == VerificationStatus.rejected ||
+                    verificationApp.status ==
+                        VerificationStatus.notApplied)) ...[
               _buildApplicationForm(context, provider, verificationApp),
             ] else if (!isApproved && verificationApp != null) ...[
               _buildStatusDetail(verificationApp),
@@ -140,13 +160,20 @@ class _CreatorVerificationScreenState extends State<CreatorVerificationScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(statusText, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                Text(
+                  statusText,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
                 const SizedBox(height: 4),
                 const Text(
                   'All applications require Admin Review. Regular users cannot self-grant badges.',
                   style: TextStyle(color: Colors.white70, fontSize: 11),
                 ),
-                if (app?.submittedAt != null) ...[ 
+                if (app?.submittedAt != null) ...[
                   const SizedBox(height: 2),
                   Text(
                     'Submitted: ${app!.submittedAt.toLocal().toString().substring(0, 16)}',
@@ -165,14 +192,24 @@ class _CreatorVerificationScreenState extends State<CreatorVerificationScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Application Details', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+        const Text(
+          'Application Details',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
         const SizedBox(height: 12),
         _detailRow('Category', app.category),
         _detailRow('Social Link', app.socialLink),
         _detailRow('Reason', app.reason),
         if (app.decidedAt != null)
-          _detailRow('Decision Date', app.decidedAt!.toLocal().toString().substring(0, 16)),
-        if (app.rejectionReason != null && app.rejectionReason!.isNotEmpty) ...[ 
+          _detailRow(
+            'Decision Date',
+            app.decidedAt!.toLocal().toString().substring(0, 16),
+          ),
+        if (app.rejectionReason != null && app.rejectionReason!.isNotEmpty) ...[
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.all(12),
@@ -199,23 +236,33 @@ class _CreatorVerificationScreenState extends State<CreatorVerificationScreen> {
         children: [
           SizedBox(
             width: 110,
-            child: Text('$label:', style: const TextStyle(color: Colors.white54, fontSize: 13)),
+            child: Text(
+              '$label:',
+              style: const TextStyle(color: Colors.white54, fontSize: 13),
+            ),
           ),
           Expanded(
-            child: Text(value, style: const TextStyle(color: Colors.white, fontSize: 13)),
+            child: Text(
+              value,
+              style: const TextStyle(color: Colors.white, fontSize: 13),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildApplicationForm(BuildContext context, AppStateProvider provider, VerificationApplication? prev) {
+  Widget _buildApplicationForm(
+    BuildContext context,
+    AppStateProvider provider,
+    VerificationApplication? prev,
+  ) {
     return Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (prev?.status == VerificationStatus.rejected) ...[ 
+          if (prev?.status == VerificationStatus.rejected) ...[
             Container(
               padding: const EdgeInsets.all(10),
               margin: const EdgeInsets.only(bottom: 16),
@@ -232,7 +279,11 @@ class _CreatorVerificationScreenState extends State<CreatorVerificationScreen> {
           ],
           const Text(
             'Submit Verification Application',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
           ),
           const SizedBox(height: 12),
           // Category field with validation
@@ -302,14 +353,30 @@ class _CreatorVerificationScreenState extends State<CreatorVerificationScreen> {
             width: double.infinity,
             height: 48,
             child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.pinkAccent),
-              onPressed: _isSubmitting ? null : () => _submitApplication(context, provider),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.pinkAccent,
+              ),
+              onPressed: _isSubmitting
+                  ? null
+                  : () => _submitApplication(context, provider),
               icon: _isSubmitting
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
                   : const Icon(Icons.verified_user, color: Colors.white),
               label: Text(
-                _isSubmitting ? 'Submitting...' : 'Submit Application for Admin Review',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                _isSubmitting
+                    ? 'Submitting...'
+                    : 'Submit Application for Admin Review',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
@@ -318,10 +385,14 @@ class _CreatorVerificationScreenState extends State<CreatorVerificationScreen> {
     );
   }
 
-  Future<void> _submitApplication(BuildContext context, AppStateProvider provider) async {
+  Future<void> _submitApplication(
+    BuildContext context,
+    AppStateProvider provider,
+  ) async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSubmitting = true);
 
+    final messenger = ScaffoldMessenger.of(context);
     try {
       await provider.submitVerification(
         _categoryController.text.trim(),
@@ -329,9 +400,11 @@ class _CreatorVerificationScreenState extends State<CreatorVerificationScreen> {
         _reasonController.text.trim(),
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           const SnackBar(
-            content: Text('Application submitted! Switch to Admin account to review.'),
+            content: Text(
+              'Application submitted! Switch to Admin account to review.',
+            ),
             backgroundColor: Colors.green,
           ),
         );

@@ -71,40 +71,40 @@ class ProductReview {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'productId': productId,
-        'userId': userId,
-        'userName': userName,
-        'userAvatarUrl': userAvatarUrl,
-        'rating': rating,
-        'comment': comment,
-        'isVerifiedPurchase': isVerifiedPurchase,
-        'createdAt': createdAt.toIso8601String(),
-      };
+    'id': id,
+    'productId': productId,
+    'userId': userId,
+    'userName': userName,
+    'userAvatarUrl': userAvatarUrl,
+    'rating': rating,
+    'comment': comment,
+    'isVerifiedPurchase': isVerifiedPurchase,
+    'createdAt': createdAt.toIso8601String(),
+  };
 
   factory ProductReview.fromJson(Map<String, dynamic> json) => ProductReview(
-        id: json['id'] as String,
-        productId: json['productId'] as String,
-        userId: json['userId'] as String,
-        userName: json['userName'] as String,
-        userAvatarUrl: json['userAvatarUrl'] as String,
-        rating: (json['rating'] as num).toDouble(),
-        comment: json['comment'] as String,
-        isVerifiedPurchase: json['isVerifiedPurchase'] as bool? ?? false,
-        createdAt: DateTime.parse(json['createdAt'] as String),
-      );
+    id: json['id'] as String,
+    productId: json['productId'] as String,
+    userId: json['userId'] as String,
+    userName: json['userName'] as String,
+    userAvatarUrl: json['userAvatarUrl'] as String,
+    rating: (json['rating'] as num).toDouble(),
+    comment: json['comment'] as String,
+    isVerifiedPurchase: json['isVerifiedPurchase'] as bool? ?? false,
+    createdAt: DateTime.parse(json['createdAt'] as String),
+  );
 
   ProductReview copyWith({bool? isVerifiedPurchase}) => ProductReview(
-        id: id,
-        productId: productId,
-        userId: userId,
-        userName: userName,
-        userAvatarUrl: userAvatarUrl,
-        rating: rating,
-        comment: comment,
-        isVerifiedPurchase: isVerifiedPurchase ?? this.isVerifiedPurchase,
-        createdAt: createdAt,
-      );
+    id: id,
+    productId: productId,
+    userId: userId,
+    userName: userName,
+    userAvatarUrl: userAvatarUrl,
+    rating: rating,
+    comment: comment,
+    isVerifiedPurchase: isVerifiedPurchase ?? this.isVerifiedPurchase,
+    createdAt: createdAt,
+  );
 }
 
 class VerificationApplication {
@@ -149,57 +149,57 @@ class VerificationApplication {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'creatorId': creatorId,
-        'creatorName': creatorName,
-        'category': category,
-        'socialLink': socialLink,
-        'reason': reason,
-        'status': status.index,
-        'submittedAt': submittedAt.toIso8601String(),
-        'decidedByAdminId': decidedByAdminId,
-        'decidedAt': decidedAt?.toIso8601String(),
-        'rejectionReason': rejectionReason,
-      };
+    'id': id,
+    'creatorId': creatorId,
+    'creatorName': creatorName,
+    'category': category,
+    'socialLink': socialLink,
+    'reason': reason,
+    'status': status.index,
+    'submittedAt': submittedAt.toIso8601String(),
+    'decidedByAdminId': decidedByAdminId,
+    'decidedAt': decidedAt?.toIso8601String(),
+    'rejectionReason': rejectionReason,
+  };
 
-  factory VerificationApplication.fromJson(Map<String, dynamic> json) =>
-      VerificationApplication(
-        id: json['id'] as String,
-        creatorId: json['creatorId'] as String,
-        creatorName: json['creatorName'] as String,
-        category: json['category'] as String,
-        socialLink: json['socialLink'] as String,
-        reason: json['reason'] as String,
-        // Backward compat: old records used 0=none(now notApplied),1=pending,
-        // 2=approved,3=rejected. The new enum inserts notApplied at index 0;
-        // existing stored indices remain valid because the previous enum started
-        // at 0=none which maps cleanly to 0=notApplied.
-        status: VerificationStatus.values[json['status'] as int],
-        submittedAt: DateTime.parse(json['submittedAt'] as String),
-        decidedByAdminId: json['decidedByAdminId'] as String?,
-        decidedAt: json['decidedAt'] != null
-            ? DateTime.parse(json['decidedAt'] as String)
-            : null,
-        rejectionReason: json['rejectionReason'] as String?,
-      );
+  factory VerificationApplication.fromJson(
+    Map<String, dynamic> json,
+  ) => VerificationApplication(
+    id: json['id'] as String,
+    creatorId: json['creatorId'] as String,
+    creatorName: json['creatorName'] as String,
+    category: json['category'] as String,
+    socialLink: json['socialLink'] as String,
+    reason: json['reason'] as String,
+    // Backward compat: old records used 0=none(now notApplied),1=pending,
+    // 2=approved,3=rejected. The new enum inserts notApplied at index 0;
+    // existing stored indices remain valid because the previous enum started
+    // at 0=none which maps cleanly to 0=notApplied.
+    status: VerificationStatus.values[json['status'] as int],
+    submittedAt: DateTime.parse(json['submittedAt'] as String),
+    decidedByAdminId: json['decidedByAdminId'] as String?,
+    decidedAt: json['decidedAt'] != null
+        ? DateTime.parse(json['decidedAt'] as String)
+        : null,
+    rejectionReason: json['rejectionReason'] as String?,
+  );
 
   VerificationApplication copyWith({
     VerificationStatus? status,
     String? decidedByAdminId,
     DateTime? decidedAt,
     String? rejectionReason,
-  }) =>
-      VerificationApplication(
-        id: id,
-        creatorId: creatorId,
-        creatorName: creatorName,
-        category: category,
-        socialLink: socialLink,
-        reason: reason,
-        status: status ?? this.status,
-        submittedAt: submittedAt,
-        decidedByAdminId: decidedByAdminId ?? this.decidedByAdminId,
-        decidedAt: decidedAt ?? this.decidedAt,
-        rejectionReason: rejectionReason ?? this.rejectionReason,
-      );
+  }) => VerificationApplication(
+    id: id,
+    creatorId: creatorId,
+    creatorName: creatorName,
+    category: category,
+    socialLink: socialLink,
+    reason: reason,
+    status: status ?? this.status,
+    submittedAt: submittedAt,
+    decidedByAdminId: decidedByAdminId ?? this.decidedByAdminId,
+    decidedAt: decidedAt ?? this.decidedAt,
+    rejectionReason: rejectionReason ?? this.rejectionReason,
+  );
 }
