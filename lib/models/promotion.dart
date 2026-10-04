@@ -87,6 +87,9 @@ class PromotionRecord {
         expiryTime!.isAfter(t);
   }
 
+  /// Alias for the single source-of-truth active-promotion rule.
+  bool isCurrentlyActive({DateTime? now}) => isActive(now: now);
+
   /// True when payment succeeded but the window has now elapsed.
   bool isExpired({DateTime? now}) {
     final t = now ?? DateTime.now().toUtc();

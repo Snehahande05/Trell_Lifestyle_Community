@@ -1,7 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trell_lifestyle_community/repositories/app_repository.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences.setMockInitialValues({});
   group('Step 4 & 5 Tests', () {
     test('Idempotent seeding does not duplicate posts', () async {
       final repo = LocalDemoRepository();

@@ -44,13 +44,6 @@ class FakePrefs {
   Future<bool> setInt(String key, int value) async => true;
 }
 
-/// In-memory repository for tests — extends LocalDemoRepository logic
-/// without SharedPreferences. Seeds minimal data for deterministic tests.
-class TestRepository extends LocalDemoRepository {
-  // We override init to seed minimal data without SharedPreferences.
-  // Actual LocalDemoRepository cannot be constructed without SharedPreferences,
-  // so we use a pure-logic helper that replicates the key behaviors.
-}
 
 // ─── Pure logic helpers (no SharedPreferences needed) ─────────────────────────
 
@@ -315,7 +308,7 @@ void main() {
       expect(validRejection, isFalse);
 
       rejectionReason = 'Insufficient follower count';
-      validRejection = rejectionReason.isNotEmpty;
+      validRejection = rejectionReason.trim().isNotEmpty;
       expect(validRejection, isTrue);
     });
 
@@ -683,7 +676,12 @@ void main() {
     });
 
     test('Expired promoted posts treated as non-promoted', () {
-      final expired = makePost('expired', isPromoted: true, expiry: now.subtract(const Duration(hours: 1)));
+      final expired = makePost(
+        'expired',
+        isPromoted: true,
+        expiry: now.subtract(const Duration(hours: 1)),
+        createdAt: now,
+      );
       final regular = makePost('regular', createdAt: now.subtract(const Duration(days: 1)));
       final sorted = sortFeed([expired, regular], now);
       // Both non-active; expired is newer so comes first
