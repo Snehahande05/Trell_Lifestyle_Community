@@ -38,19 +38,24 @@ class _WalletScreenState extends State<WalletScreen> {
     final commissions = provider.currentCreatorCommissions;
     final withdrawals = provider.currentCreatorWithdrawals;
 
-    int totalAvailablePaise = commissions
+    // Compute each ledger bucket precisely from commissions
+    int availablePaise = commissions
         .where((c) => c.status == CommissionStatus.available)
         .fold(0, (sum, c) => sum + c.amountPaise);
-
-    int pendingWithdrawalsPaise = withdrawals
-        .where((w) => w.status == WithdrawalStatus.pending)
-        .fold(0, (sum, w) => sum + w.amountPaise);
-
-    int netAvailableBalancePaise = totalAvailablePaise - pendingWithdrawalsPaise;
-
-    int pendingCommissionPaise = commissions
+    int reservedPaise = commissions
+        .where((c) => c.status == CommissionStatus.reserved)
+        .fold(0, (sum, c) => sum + c.amountPaise);
+    int pendingPaise = commissions
         .where((c) => c.status == CommissionStatus.pending)
         .fold(0, (sum, c) => sum + c.amountPaise);
+    int paidOutPaise = commissions
+        .where((c) => c.status == CommissionStatus.paidOut)
+        .fold(0, (sum, c) => sum + c.amountPaise);
+    // Clawback amounts are negative
+    int clawbackSum = commissions
+        .where((c) => c.status == CommissionStatus.clawback)
+        .fold(0, (sum, c) => sum + c.amountPaise);
+    bool hasClawbackDebt = clawbackSum < 0;
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -63,50 +68,67 @@ class _WalletScreenState extends State<WalletScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Available Balance & Pending Cards
+            // Demo payout disclaimer
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.amber.shade900.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.amber),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.amber, size: 18),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Demo payout — no real bank/UPI transfer. All withdrawals are simulated.',
+                      style: TextStyle(color: Colors.amber, fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Balance Breakdown Card
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Colors.purple, Colors.deepPurpleAccent],
-                ),
+                gradient: const LinearGradient(colors: [Colors.purple, Colors.deepPurpleAccent]),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Available Balance for Payout', style: TextStyle(color: Colors.white70, fontSize: 13)),
-                  const SizedBox(height: 6),
-                  Text(
-                    CurrencyUtils.formatPaise(netAvailableBalancePaise),
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 32),
-                  ),
-                  if (pendingWithdrawalsPaise > 0)
-                    Text(
-                      '(${CurrencyUtils.formatPaise(pendingWithdrawalsPaise)} reserved for pending withdrawal requests)',
-                      style: const TextStyle(color: Colors.amberAccent, fontSize: 11),
+                  const Text('Affiliate Commission Ledger', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  const SizedBox(height: 12),
+                  _buildBalanceRow('Pending (order not completed yet):', CurrencyUtils.formatPaise(pendingPaise), Colors.amberAccent),
+                  _buildBalanceRow('Available (ready to withdraw):', CurrencyUtils.formatPaise(availablePaise), Colors.greenAccent),
+                  _buildBalanceRow('Reserved (withdrawal in review):', CurrencyUtils.formatPaise(reservedPaise), Colors.lightBlueAccent),
+                  _buildBalanceRow('Paid Out (withdrawn — demo):', CurrencyUtils.formatPaise(paidOutPaise), Colors.purpleAccent),
+                  if (hasClawbackDebt) ...[
+                    const Divider(color: Colors.white38),
+                    _buildBalanceRow(
+                      'Recovery Due (refund after payout):',
+                      '-${CurrencyUtils.formatPaise(clawbackSum.abs())}',
+                      Colors.redAccent,
                     ),
-                  const Divider(color: Colors.white38, height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Pending Order Commission:', style: TextStyle(color: Colors.white70, fontSize: 13)),
-                      Text(
-                        CurrencyUtils.formatPaise(pendingCommissionPaise),
-                        style: const TextStyle(color: Colors.amberAccent, fontWeight: FontWeight.bold, fontSize: 14),
-                      ),
-                    ],
-                  ),
+                    const Text(
+                      '⚠ Withdrawals blocked until recovery debt is cleared from future earnings.',
+                      style: TextStyle(color: Colors.redAccent, fontSize: 11),
+                    ),
+                  ],
                 ],
               ),
             ),
             const SizedBox(height: 24),
 
-            // Withdrawal Form Section (Requirement #7)
+            // Withdrawal Form
             const Text('Request Demo Withdrawal', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 6),
             const Text(
-              'Minimum withdrawal limit: ₹100. Requested funds are immediately reserved to prevent overspending.',
+              'Minimum: ₹100. Available balance is moved to "Reserved" on submission. Approved by admin moves it to "Paid Out". Rejection releases it back to "Available".',
               style: TextStyle(color: Colors.white54, fontSize: 12),
             ),
             const SizedBox(height: 12),
@@ -146,7 +168,7 @@ class _WalletScreenState extends State<WalletScreen> {
                     height: 46,
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(backgroundColor: Colors.pinkAccent),
-                      onPressed: () async {
+                      onPressed: hasClawbackDebt ? null : () async {
                         double? amountRupees = double.tryParse(_amountController.text.trim());
                         if (amountRupees == null || amountRupees <= 0) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -163,6 +185,13 @@ class _WalletScreenState extends State<WalletScreen> {
                           return;
                         }
 
+                        if (_upiController.text.trim().isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Please enter a UPI ID or bank account.')),
+                          );
+                          return;
+                        }
+
                         WithdrawalRequest? req = await provider.requestWithdrawal(
                           amountPaise,
                           _upiController.text.trim(),
@@ -173,14 +202,14 @@ class _WalletScreenState extends State<WalletScreen> {
                             _amountController.clear();
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Withdrawal request submitted for Admin review!'),
+                                content: Text('Withdrawal request submitted! Funds reserved pending admin approval.'),
                                 backgroundColor: Colors.green,
                               ),
                             );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Insufficient available balance for this request.'),
+                                content: Text('Cannot submit: Insufficient available balance or outstanding recovery debt.'),
                                 backgroundColor: Colors.redAccent,
                               ),
                             );
@@ -196,9 +225,9 @@ class _WalletScreenState extends State<WalletScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Withdrawal History List
+            // Withdrawal History
             Text(
-              'Withdrawal Requests (${withdrawals.length})',
+              'Withdrawal History (${withdrawals.length})',
               style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 10),
@@ -213,22 +242,50 @@ class _WalletScreenState extends State<WalletScreen> {
                       return Card(
                         color: Colors.grey.shade900,
                         margin: const EdgeInsets.only(bottom: 10),
-                        child: ListTile(
-                          title: Text(
-                            CurrencyUtils.formatPaise(req.amountPaise),
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    CurrencyUtils.formatPaise(req.amountPaise),
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                                  ),
+                                  _buildWithdrawalStatusBadge(req.status),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Text('Ref: ${req.id}', style: const TextStyle(color: Colors.white38, fontSize: 11)),
+                              Text('To: ${req.upiIdOrBank}', style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                              Text('Requested: ${req.requestedAt.toString().substring(0, 16)}', style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                              if (req.processedAt != null)
+                                Text('Processed: ${req.processedAt.toString().substring(0, 16)}', style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                              if (req.rejectionReason != null)
+                                Text('Reason: ${req.rejectionReason}', style: const TextStyle(color: Colors.redAccent, fontSize: 12)),
+                            ],
                           ),
-                          subtitle: Text(
-                            'UPI: ${req.upiIdOrBank}\nRequested: ${req.requestedAt.toString().substring(0, 16)}',
-                            style: const TextStyle(color: Colors.white54, fontSize: 12),
-                          ),
-                          trailing: _buildWithdrawalStatusBadge(req.status),
                         ),
                       );
                     },
                   ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildBalanceRow(String label, String value, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(child: Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12))),
+          Text(value, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 13)),
+        ],
       ),
     );
   }
@@ -243,11 +300,11 @@ class _WalletScreenState extends State<WalletScreen> {
         break;
       case WithdrawalStatus.approved:
         bg = Colors.green;
-        label = 'Approved (Simulated)';
+        label = 'Paid Out (Demo)';
         break;
       case WithdrawalStatus.rejected:
         bg = Colors.red;
-        label = 'Rejected (Refunded)';
+        label = 'Rejected — Released';
         break;
     }
     return Container(

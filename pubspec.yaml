@@ -41,6 +41,8 @@ dependencies:
   intl: ^0.20.3
   path_provider: ^2.1.6
   share_plus: ^13.3.1
+  permission_handler: ^13.0.2
+  audioplayers: ^6.8.1
 
 dev_dependencies:
   flutter_test:
@@ -71,6 +73,16 @@ flutter:
     - assets/videos/travel_vlog.mp4
     - assets/videos/food_recipe.mp4
     - assets/videos/diy_craft.mp4
+    - assets/audio/lofi_chill.wav
+    - assets/audio/upbeat_pop.wav
+    - assets/audio/acoustic_travel.wav
+    - assets/audio/bossa_nova.wav
+    - assets/images/creator_priya.png
+    - assets/images/creator_rohan.png
+    - assets/images/viewer_aanya.png
+    - assets/images/product_lipstick.png
+    - assets/images/product_jacket.png
+    - assets/images/product_duffle.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

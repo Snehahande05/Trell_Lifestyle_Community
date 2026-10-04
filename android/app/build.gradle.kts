@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.trell.lifestyle.trell_lifestyle_community"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

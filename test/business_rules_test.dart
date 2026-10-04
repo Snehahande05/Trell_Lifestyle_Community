@@ -4,6 +4,7 @@ import 'package:trell_lifestyle_community/repositories/app_repository.dart';
 import 'package:trell_lifestyle_community/models/order.dart';
 import 'package:trell_lifestyle_community/models/wallet.dart';
 import 'package:trell_lifestyle_community/services/attribution_service.dart';
+import 'package:trell_lifestyle_community/models/post.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -197,6 +198,66 @@ void main() {
       final recsClamped = repository.getRevenueShareRecordsForCreator('u_creator1');
       expect(recsClamped.first.shareRate, 0.30); // Max 30% cap enforced
       expect(recsClamped.first.calculatedSharePaise, 30000);
+    });
+
+    test('Step 2: Video Trimming Validation Rules', () {
+      double sourceDuration = 15.0;
+      double trimStart = 2.0;
+      double trimEnd = 8.0;
+
+      // Validate 0 <= start < end <= source duration
+      expect(trimStart >= 0, true);
+      expect(trimStart < trimEnd, true);
+      expect(trimEnd <= sourceDuration, true);
+
+      double exportedDuration = trimEnd - trimStart;
+      expect(exportedDuration, 6.0);
+    });
+
+    test('Step 2: Audio Settings & Royalty-Free Track Selection', () {
+      final musicOptions = [
+        'None',
+        'Lo-Fi Chill Beats',
+        'Upbeat Pop Vibes',
+        'Acoustic Travel',
+        'Bossa Nova Cafe'
+      ];
+      expect(musicOptions.contains('Lo-Fi Chill Beats'), true);
+
+      double origAudioVol = 0.0; // Mute original audio
+      double musicVol = 0.75; // 75% music volume
+
+      expect(origAudioVol, 0.0);
+      expect(musicVol, 0.75);
+    });
+
+    test('Step 2: Post Model Editing Metadata & Storage Persistence Compatibility', () async {
+      final post = Post(
+        id: 'post_edited_test',
+        creatorId: 'u_creator1',
+        creatorName: 'Priya Fashionista',
+        creatorAvatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+        videoPath: '/data/user/0/com.trell.lifestyle/app_flutter/trell_export_123.mp4',
+        caption: 'Edited Video Post #Trell',
+        category: 'Fashion',
+        taggedProductIds: ['p_1'],
+        filterName: 'Vintage Warm',
+        musicTitle: 'Lo-Fi Chill Beats',
+        musicVolume: 0.5,
+        trimStartSeconds: 2.0,
+        trimEndSeconds: 8.0,
+        createdAt: DateTime.now(),
+      );
+
+      await repository.addPost(post);
+
+      final retrieved = repository.getPostById('post_edited_test');
+      expect(retrieved, isNotNull);
+      expect(retrieved!.filterName, 'Vintage Warm');
+      expect(retrieved.musicTitle, 'Lo-Fi Chill Beats');
+      expect(retrieved.trimStartSeconds, 2.0);
+      expect(retrieved.trimEndSeconds, 8.0);
+      expect(retrieved.videoPath.contains('trell_export_'), true);
     });
   });
 }

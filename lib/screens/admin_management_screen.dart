@@ -213,6 +213,32 @@ class _AdminManagementScreenState extends State<AdminManagementScreen>
                             Text('Category: ${app.category} • Social: ${app.socialLink}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
                             const SizedBox(height: 4),
                             Text('Reason: ${app.reason}', style: const TextStyle(color: Colors.white54, fontSize: 12)),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Submitted: ${app.submittedAt.toLocal().toString().substring(0, 16)}',
+                              style: const TextStyle(color: Colors.white38, fontSize: 11),
+                            ),
+                            if (app.decidedAt != null) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                'Decision: ${app.decidedAt!.toLocal().toString().substring(0, 16)} by admin',
+                                style: const TextStyle(color: Colors.white38, fontSize: 11),
+                              ),
+                            ],
+                            if (app.rejectionReason != null && app.rejectionReason!.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.shade900.withValues(alpha: 0.3),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  'Rejection Reason: ${app.rejectionReason}',
+                                  style: const TextStyle(color: Colors.redAccent, fontSize: 12),
+                                ),
+                              ),
+                            ],
                             const SizedBox(height: 8),
                             if (app.status == VerificationStatus.pending)
                               Row(
@@ -221,6 +247,11 @@ class _AdminManagementScreenState extends State<AdminManagementScreen>
                                     style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
                                     onPressed: () async {
                                       await provider.processVerification(app.id, true);
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Creator badge approved!'), backgroundColor: Colors.green),
+                                        );
+                                      }
                                     },
                                     child: const Text('Approve Badge ✔️', style: TextStyle(color: Colors.white)),
                                   ),
@@ -228,7 +259,48 @@ class _AdminManagementScreenState extends State<AdminManagementScreen>
                                   OutlinedButton(
                                     style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.redAccent)),
                                     onPressed: () async {
-                                      await provider.processVerification(app.id, false);
+                                      // Require rejection reason
+                                      final TextEditingController reasonCtrl = TextEditingController();
+                                      final String? reason = await showDialog<String>(
+                                        context: context,
+                                        builder: (dialogCtx) => AlertDialog(
+                                          backgroundColor: Colors.grey.shade900,
+                                          title: const Text('Rejection Reason', style: TextStyle(color: Colors.white)),
+                                          content: TextField(
+                                            controller: reasonCtrl,
+                                            style: const TextStyle(color: Colors.white),
+                                            maxLines: 3,
+                                            decoration: const InputDecoration(
+                                              hintText: 'Required: explain why the application is rejected',
+                                              hintStyle: TextStyle(color: Colors.white38),
+                                              border: OutlineInputBorder(),
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(dialogCtx),
+                                              child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+                                            ),
+                                            ElevatedButton(
+                                              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+                                              onPressed: () {
+                                                if (reasonCtrl.text.trim().isNotEmpty) {
+                                                  Navigator.pop(dialogCtx, reasonCtrl.text.trim());
+                                                }
+                                              },
+                                              child: const Text('Confirm Reject', style: TextStyle(color: Colors.white)),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                      if (reason != null && context.mounted) {
+                                        await provider.processVerification(app.id, false, rejectionReason: reason);
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('Application rejected: $reason'), backgroundColor: Colors.orange),
+                                          );
+                                        }
+                                      }
                                     },
                                     child: const Text('Reject', style: TextStyle(color: Colors.redAccent)),
                                   ),

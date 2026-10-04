@@ -118,13 +118,23 @@ class _VideoFeedScreenState extends State<VideoFeedScreen> {
                         )
                       : Builder(
                           builder: (context) {
-                            final now = DateTime.now();
-                            // Sort posts: Active promoted posts come first
+                            final now = DateTime.now().toUtc();
+                            // Centralized active-promotion rule (Step 10 §10):
+                            // Active = isPromoted && promotionExpiry != null && expiryTime > now.
+                            // promotionExpiry == null alone does NOT count as active.
+                            // Deterministic ordering: active promoted first (newest first),
+                            // then non-promoted (newest first).
+                            bool isPostActivelyPromoted(Post p) =>
+                                p.isPromoted &&
+                                p.promotionExpiry != null &&
+                                p.promotionExpiry!.toUtc().isAfter(now);
+
                             final sortedPosts = List<Post>.from(posts)..sort((a, b) {
-                              bool aPromoted = a.isPromoted && (a.promotionExpiry == null || a.promotionExpiry!.isAfter(now));
-                              bool bPromoted = b.isPromoted && (b.promotionExpiry == null || b.promotionExpiry!.isAfter(now));
+                              final aPromoted = isPostActivelyPromoted(a);
+                              final bPromoted = isPostActivelyPromoted(b);
                               if (aPromoted && !bPromoted) return -1;
                               if (!aPromoted && bPromoted) return 1;
+                              // Same bucket: newest first (deterministic)
                               return b.createdAt.compareTo(a.createdAt);
                             });
 

@@ -21,31 +21,26 @@ class CreatorDashboardScreen extends StatelessWidget {
     }
 
     final analytics = provider.getCreatorAnalytics(user.id);
+    final products = provider.allProducts;
 
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.grey.shade900,
-        title: Text('${user.name} - Creator Analytics', style: const TextStyle(color: Colors.white, fontSize: 16)),
+        title: Text('${user.name} — Creator Analytics', style: const TextStyle(color: Colors.white, fontSize: 15)),
         actions: [
           IconButton(
             icon: const Icon(Icons.account_balance_wallet, color: Colors.amber),
             tooltip: 'My Wallet',
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const WalletScreen()),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const WalletScreen()));
             },
           ),
           IconButton(
             icon: const Icon(Icons.campaign, color: Colors.pinkAccent),
             tooltip: 'Promote Posts',
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const PromotionsScreen()),
-              );
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const PromotionsScreen()));
             },
           ),
         ],
@@ -55,11 +50,11 @@ class CreatorDashboardScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Historical Data Disclaimer Banner (Requirement #8)
+            // Disclaimer banner
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.purple.shade900.withOpacity(0.5),
+                color: Colors.purple.shade900.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.purpleAccent),
               ),
@@ -69,7 +64,7 @@ class CreatorDashboardScreen extends StatelessWidget {
                   SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Live Calculated Metrics (Seeded historical data labelled as demo history)',
+                      'Local demo analytics — data stored on-device only. Refunded orders are excluded from conversion counts.',
                       style: TextStyle(color: Colors.white70, fontSize: 11),
                     ),
                   ),
@@ -78,78 +73,78 @@ class CreatorDashboardScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // Top Quick Summary Cards
+            // Follower & Post overview
             Row(
               children: [
-                Expanded(
-                  child: _buildMetricCard(
-                    'Spendable Balance',
-                    CurrencyUtils.formatPaise(analytics['spendableBalancePaise']),
-                    Icons.account_balance_wallet,
-                    Colors.greenAccent,
-                  ),
-                ),
+                Expanded(child: _buildMetricCard('Followers', '${analytics['followers']}', Icons.people, Colors.cyanAccent)),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: _buildMetricCard(
-                    'Pending Commission',
-                    CurrencyUtils.formatPaise(analytics['pendingCommissionPaise']),
-                    Icons.pending_actions,
-                    Colors.amberAccent,
-                  ),
-                ),
+                Expanded(child: _buildMetricCard('Published Posts', '${analytics['publishedPosts']}', Icons.video_collection, Colors.pinkAccent)),
               ],
             ),
             const SizedBox(height: 12),
 
-            Row(
-              children: [
-                Expanded(
-                  child: _buildMetricCard(
-                    'Paid-Out Earnings',
-                    CurrencyUtils.formatPaise(analytics['paidOutCommissionPaise']),
-                    Icons.payments,
-                    Colors.lightBlueAccent,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildMetricCard(
-                    'Lifetime Earnings',
+            // Earnings Ledger Section
+            const Text('Affiliate Commission Ledger', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade900,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.purpleAccent.withValues(alpha: 0.4)),
+              ),
+              child: Column(
+                children: [
+                  _buildLedgerRow('Pending (awaiting fulfilment)', CurrencyUtils.formatPaise(analytics['pendingCommissionPaise']), Colors.amberAccent),
+                  _buildLedgerRow('Available (ready to withdraw)', CurrencyUtils.formatPaise(analytics['availableCommissionPaise']), Colors.greenAccent),
+                  _buildLedgerRow('Reserved (withdrawal pending)', CurrencyUtils.formatPaise(analytics['reservedCommissionPaise']), Colors.lightBlueAccent),
+                  _buildLedgerRow('Paid Out (withdrawn — demo)', CurrencyUtils.formatPaise(analytics['paidOutCommissionPaise']), Colors.purpleAccent),
+                  if ((analytics['recoveryDuePaise'] as int) > 0)
+                    _buildLedgerRow(
+                      'Recovery Due (refund after payout)',
+                      '-${CurrencyUtils.formatPaise(analytics['recoveryDuePaise'])}',
+                      Colors.redAccent,
+                    ),
+                  const Divider(color: Colors.white24, height: 20),
+                  _buildLedgerRow(
+                    'Lifetime Gross Earnings',
                     CurrencyUtils.formatPaise(analytics['lifetimeEarningsPaise']),
-                    Icons.stars,
-                    Colors.purpleAccent,
+                    Colors.white,
+                    bold: true,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 4),
+                  // Reconciliation equation display
+                  Text(
+                    'Reconciliation: Gross ₹ ${CurrencyUtils.formatPaise(analytics['grossCommissionPaise'])} '
+                    '− Reversed ₹ ${CurrencyUtils.formatPaise(analytics['reversedCommissionPaise'])} '
+                    '= Pending + Available + Reserved + Paid Out',
+                    style: const TextStyle(color: Colors.white38, fontSize: 10),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
+            // Sales Metrics
             Row(
               children: [
-                Expanded(
-                  child: _buildMetricCard(
-                    'Attributed Sales Value',
-                    CurrencyUtils.formatPaise(analytics['salesValuePaise']),
-                    Icons.shopping_bag,
-                    Colors.pinkAccent,
-                  ),
-                ),
+                Expanded(child: _buildMetricCard('Attributed Orders', '${analytics['attributedConversions']} orders', Icons.shopping_bag, Colors.pinkAccent)),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: _buildMetricCard(
-                    'Units Sold',
-                    '${analytics['unitsSold']} units',
-                    Icons.sell,
-                    Colors.orangeAccent,
-                  ),
-                ),
+                Expanded(child: _buildMetricCard('Units Sold', '${analytics['unitsSold']} units', Icons.sell, Colors.orangeAccent)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(child: _buildMetricCard('Sales Value (Gross)', CurrencyUtils.formatPaise(analytics['salesValuePaise']), Icons.attach_money, Colors.greenAccent)),
+                const SizedBox(width: 12),
+                Expanded(child: _buildMetricCard('Net Cash Paid (Demo)', CurrencyUtils.formatPaise(analytics['netCashPaidPaise']), Icons.payments, Colors.lightBlueAccent)),
               ],
             ),
             const SizedBox(height: 20),
 
-            // Calculated Conversion & Engagement Rates Section (Requirement #8)
-            const Text('Formula-Based Key Performance Indicators', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+            // Engagement & Conversion Rates
+            const Text('Formula-Based KPIs', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 10),
             Container(
               padding: const EdgeInsets.all(16),
@@ -163,20 +158,20 @@ class CreatorDashboardScreen extends StatelessWidget {
                   _buildFormulaRow(
                     'Engagement Rate',
                     '${(analytics['engagementRate'] as double).toStringAsFixed(2)}%',
-                    'Formula: (Likes [${analytics['likes']}] + Comments [${analytics['comments']}] + Shares [${analytics['shares']}]) / Views [${analytics['views']}] × 100',
+                    '(Likes [${analytics['likes']}] + Comments [${analytics['comments']}] + Shares [${analytics['shares']}]) / Views [${analytics['views']}] × 100',
                   ),
                   const Divider(color: Colors.white24, height: 24),
                   _buildFormulaRow(
-                    'Conversion Rate',
+                    'Conversion Rate (orders/clicks)',
                     '${(analytics['conversionRate'] as double).toStringAsFixed(2)}%',
-                    'Formula: Attributed Purchases [${analytics['attributedPurchases']}] / Product Clicks [${analytics['clicks']}] × 100',
+                    'Attributed Paid Orders [${analytics['attributedConversions']}] / Affiliate Clicks [${analytics['clicks']}] × 100 — Refunded orders excluded',
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 20),
 
-            // Content Performance Metrics Grid
+            // Content Interaction Grid
             const Text('Content Interaction Totals', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 10),
             GridView.count(
@@ -195,8 +190,77 @@ class CreatorDashboardScreen extends StatelessWidget {
                 _buildSmallStatCard('Posts', '${analytics['publishedPosts']}', Icons.video_collection, Colors.pink),
               ],
             ),
+            const SizedBox(height: 24),
+
+            // Product Earning Potential (Step 8 §17)
+            const Text('Product Earning Potential (Estimates)', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 4),
+            const Text(
+              'These are estimates based on current product price × commission rate. Not guaranteed earnings. Historical order commissions use snapshotted rates and are unaffected by price changes.',
+              style: TextStyle(color: Colors.white54, fontSize: 11),
+            ),
+            const SizedBox(height: 10),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: products.length,
+              itemBuilder: (ctx, idx) {
+                final product = products[idx];
+                if (!product.isAvailable) return const SizedBox.shrink();
+                // Same calculation helper as order commission (rounded)
+                final estimatedCommPaise = (product.pricePaise * product.commissionRate).round();
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade900,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(product.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                            Text(
+                              '${CurrencyUtils.formatPaise(product.pricePaise)} × ${(product.commissionRate * 100).toStringAsFixed(0)}%',
+                              style: const TextStyle(color: Colors.white54, fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            'Est. ${CurrencyUtils.formatPaise(estimatedCommPaise)}/unit',
+                            style: const TextStyle(color: Colors.greenAccent, fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                          const Text('(estimate)', style: TextStyle(color: Colors.white38, fontSize: 10)),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildLedgerRow(String label, String value, Color color, {bool bold = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(child: Text(label, style: TextStyle(color: bold ? Colors.white : Colors.white70, fontSize: 12, fontWeight: bold ? FontWeight.bold : FontWeight.normal))),
+          Text(value, style: TextStyle(color: color, fontWeight: bold ? FontWeight.bold : FontWeight.w600, fontSize: 13)),
+        ],
       ),
     );
   }
@@ -207,7 +271,7 @@ class CreatorDashboardScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.grey.shade900,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.5)),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,7 +280,7 @@ class CreatorDashboardScreen extends StatelessWidget {
           const SizedBox(height: 8),
           Text(title, style: const TextStyle(color: Colors.white54, fontSize: 11)),
           const SizedBox(height: 4),
-          Text(value, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16)),
+          Text(value, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 15)),
         ],
       ),
     );

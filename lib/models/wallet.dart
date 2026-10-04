@@ -1,4 +1,52 @@
-enum CommissionStatus { pending, available, reserved, paidOut, reversed }
+// ============================================================
+// LEDGER MODEL — Trell Lifestyle Community (Step 7)
+// ============================================================
+//
+// ROUNDING RULE: All paise amounts use Dart's built-in .round()
+//   (rounds half-to-even / "banker's rounding"). Applied once
+//   at commission creation using: (totalPaise * commissionRate).round()
+//
+// COMMISSION LIFECYCLE:
+//   pending   — created when a paid order with attribution is confirmed.
+//               Not withdrawable yet. Reversed if order is cancelled.
+//   available — moved here when admin marks order as "completed".
+//               Can be requested for withdrawal.
+//   reserved  — moved here when a withdrawal is requested (= reservation).
+//               Prevents double-spending without committing payout.
+//   paidOut   — moved here when admin approves a withdrawal request.
+//               The actual split record stores only the withdrawn portion.
+//   reversed  — commission reversed by refund/cancellation.
+//               Cannot be counted as earnings.
+//   clawback  — created when a commission is refunded AFTER payout.
+//               Represents a debt to the platform, recovered from future
+//               earnings before any new withdrawal can proceed.
+//
+// RECONCILIATION EQUATION:
+//   gross_commission - reversals
+//   = pending + available + reserved + net_cash_paid - recovery_due
+//
+//   Where:
+//     gross_commission = sum of ALL commission amounts ever created
+//     reversals = sum of all reversed commission amounts
+//     net_cash_paid = sum of paidOut amounts minus clawback recovered
+//     recovery_due = sum of outstanding clawback (unrecovered)
+//     pending/available/reserved = sums of those status amounts
+//
+// SETTLEMENT RULE:
+//   Commission becomes "available" exactly when the corresponding Order
+//   transitions to OrderStatus.completed. Only the admin can mark this.
+//
+// WITHDRAWAL MINIMUM: ₹100 (10,000 paise). Enforced in both UI and repo.
+// ============================================================
+
+enum CommissionStatus {
+  pending,    // Created on paid order; not yet withdrawable
+  available,  // Order completed; ready for withdrawal
+  reserved,   // Withdrawal request pending admin approval
+  paidOut,    // Withdrawal approved and paid out (demo)
+  reversed,   // Refunded or cancelled; no longer an entitlement
+  clawback,   // Refunded AFTER payout; debt owed to platform
+}
 
 class CommissionTransaction {
   final String id;
@@ -8,6 +56,8 @@ class CommissionTransaction {
   final int amountPaise;
   final CommissionStatus status;
   final DateTime createdAt;
+  /// Optional: ID of the withdrawal request that consumed this commission
+  final String? withdrawalId;
 
   CommissionTransaction({
     required this.id,
@@ -17,6 +67,7 @@ class CommissionTransaction {
     required this.amountPaise,
     required this.status,
     required this.createdAt,
+    this.withdrawalId,
   });
 
   Map<String, dynamic> toJson() => {
@@ -27,6 +78,7 @@ class CommissionTransaction {
         'amountPaise': amountPaise,
         'status': status.index,
         'createdAt': createdAt.toIso8601String(),
+        'withdrawalId': withdrawalId,
       };
 
   factory CommissionTransaction.fromJson(Map<String, dynamic> json) =>
@@ -36,22 +88,32 @@ class CommissionTransaction {
         orderId: json['orderId'],
         productId: json['productId'],
         amountPaise: json['amountPaise'],
-        status: CommissionStatus.values[json['status']],
+        status: CommissionStatus.values[json['status'] as int],
         createdAt: DateTime.parse(json['createdAt']),
+        withdrawalId: json['withdrawalId'],
       );
 
-  CommissionTransaction copyWith({CommissionStatus? status}) =>
+  CommissionTransaction copyWith({
+    CommissionStatus? status,
+    int? amountPaise,
+    String? withdrawalId,
+  }) =>
       CommissionTransaction(
         id: id,
         creatorId: creatorId,
         orderId: orderId,
         productId: productId,
-        amountPaise: amountPaise,
+        amountPaise: amountPaise ?? this.amountPaise,
         status: status ?? this.status,
         createdAt: createdAt,
+        withdrawalId: withdrawalId ?? this.withdrawalId,
       );
 }
 
+// Transition table for WithdrawalStatus (enforced in repository):
+//   pending  → approved   (admin approves payout)
+//   pending  → rejected   (admin rejects request)
+//   No further transitions allowed (terminal states: approved, rejected)
 enum WithdrawalStatus { pending, approved, rejected }
 
 class WithdrawalRequest {
@@ -96,7 +158,7 @@ class WithdrawalRequest {
         creatorName: json['creatorName'],
         amountPaise: json['amountPaise'],
         upiIdOrBank: json['upiIdOrBank'],
-        status: WithdrawalStatus.values[json['status']],
+        status: WithdrawalStatus.values[json['status'] as int],
         requestedAt: DateTime.parse(json['requestedAt']),
         processedAt: json['processedAt'] != null
             ? DateTime.parse(json['processedAt'])

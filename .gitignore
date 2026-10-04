@@ -69,3 +69,6 @@ app.*.map.json
 # macOS ZIP metadata
 __MACOSX/
 ._*
+
+# Local project archives
+*.zip

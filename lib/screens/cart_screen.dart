@@ -12,24 +12,32 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  final TextEditingController _addressController = TextEditingController(
-    text: '402 Sunrise Heights, Bandra West, Mumbai, MH - 400050',
-  );
+  final TextEditingController _nameController = TextEditingController(text: 'John Doe');
+  final TextEditingController _addressController = TextEditingController(text: '402 Sunrise Heights');
+  final TextEditingController _cityController = TextEditingController(text: 'Mumbai');
+  final TextEditingController _pinController = TextEditingController(text: '400050');
+  final TextEditingController _phoneController = TextEditingController(text: '9876543210');
+  
+  final _formKey = GlobalKey<FormState>();
   bool _isProcessingCheckout = false;
 
   @override
   void dispose() {
+    _nameController.dispose();
     _addressController.dispose();
+    _cityController.dispose();
+    _pinController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
   Future<void> _processDemoPayment(AppStateProvider provider, bool simulateSuccess) async {
-    if (_addressController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid delivery address.')),
-      );
+    if (!_formKey.currentState!.validate()) {
       return;
     }
+    
+    final fullAddress = '${_nameController.text.trim()}, ${_addressController.text.trim()}, ${_cityController.text.trim()}, PIN: ${_pinController.text.trim()}, Phone: ${_phoneController.text.trim()}';
+
 
     setState(() {
       _isProcessingCheckout = true;
@@ -39,7 +47,7 @@ class _CartScreenState extends State<CartScreen> {
     await Future.delayed(const Duration(milliseconds: 1200));
 
     Order? order = await provider.checkout(
-      shippingAddress: _addressController.text.trim(),
+      shippingAddress: fullAddress,
       simulateSuccess: simulateSuccess,
     );
 
@@ -221,16 +229,56 @@ class _CartScreenState extends State<CartScreen> {
                   // Shipping Address Validation Section
                   const Text('Delivery Address', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 8),
-                  TextField(
-                    controller: _addressController,
-                    style: const TextStyle(color: Colors.white),
-                    maxLines: 2,
-                    decoration: const InputDecoration(
-                      hintText: 'Enter complete shipping address...',
-                      hintStyle: TextStyle(color: Colors.white38),
-                      filled: true,
-                      fillColor: Colors.black26,
-                      border: OutlineInputBorder(),
+                  Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        TextFormField(
+                          controller: _nameController,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: const InputDecoration(labelText: 'Recipient Name', filled: true, fillColor: Colors.black26),
+                          validator: (v) => v == null || v.trim().isEmpty ? 'Name required' : null,
+                        ),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _addressController,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: const InputDecoration(labelText: 'Address', filled: true, fillColor: Colors.black26),
+                          validator: (v) => v == null || v.trim().isEmpty ? 'Address required' : null,
+                        ),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _cityController,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: const InputDecoration(labelText: 'City', filled: true, fillColor: Colors.black26),
+                          validator: (v) => v == null || v.trim().isEmpty ? 'City required' : null,
+                        ),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _pinController,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: const InputDecoration(labelText: 'PIN Code', filled: true, fillColor: Colors.black26),
+                          keyboardType: TextInputType.number,
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) return 'PIN Code required';
+                            if (!RegExp(r'^\d{6}$').hasMatch(v.trim())) return 'Enter a valid 6-digit PIN';
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _phoneController,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: const InputDecoration(labelText: 'Mobile Number (+91 is assumed)', filled: true, fillColor: Colors.black26),
+                          keyboardType: TextInputType.phone,
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) return 'Mobile Number required';
+                            String clean = v.trim().replaceAll('+91', '');
+                            if (!RegExp(r'^\d{10}$').hasMatch(clean)) return 'Enter a valid 10-digit mobile number';
+                            return null;
+                          },
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 20),
