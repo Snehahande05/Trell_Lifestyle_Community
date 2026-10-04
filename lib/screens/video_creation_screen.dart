@@ -382,7 +382,7 @@ class _VideoCreationScreenState extends State<VideoCreationScreen> {
                             style: TextStyle(fontSize: 11),
                           ),
                           onPressed: () => _useSampleDemoVideo(
-                            'assets/videos/fashion_trend.mp4',
+                            'assets/videos/categories/fashion/fashion_01.mp4',
                           ),
                         ),
                         ActionChip(
@@ -391,7 +391,7 @@ class _VideoCreationScreenState extends State<VideoCreationScreen> {
                             style: TextStyle(fontSize: 11),
                           ),
                           onPressed: () => _useSampleDemoVideo(
-                            'assets/videos/beauty_routine.mp4',
+                            'assets/videos/categories/beauty/beauty_01.mp4',
                           ),
                         ),
                         ActionChip(
@@ -400,7 +400,7 @@ class _VideoCreationScreenState extends State<VideoCreationScreen> {
                             style: TextStyle(fontSize: 11),
                           ),
                           onPressed: () => _useSampleDemoVideo(
-                            'assets/videos/travel_vlog.mp4',
+                            'assets/videos/categories/travel/travel_01.mp4',
                           ),
                         ),
                       ],

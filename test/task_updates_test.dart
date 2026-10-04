@@ -9,7 +9,6 @@ import 'package:trell_lifestyle_community/main.dart';
 import 'package:trell_lifestyle_community/screens/login_screen.dart';
 import 'package:provider/provider.dart';
 
-
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 

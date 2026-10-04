@@ -32,7 +32,7 @@ class AppStateProvider extends ChangeNotifier {
     notifyListeners();
 
     await repository.init();
-    
+
     final prefs = await SharedPreferences.getInstance();
     final savedUserId = prefs.getString('loggedInUserId');
     if (savedUserId != null) {

@@ -143,7 +143,11 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
     );
   }
 
-  void _showCreatorProfileModal(BuildContext context, User creator, AppStateProvider provider) {
+  void _showCreatorProfileModal(
+    BuildContext context,
+    User creator,
+    AppStateProvider provider,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -168,7 +172,9 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
                 children: [
                   CircleAvatar(
                     radius: 40,
-                    backgroundImage: getAdaptiveImageProvider(updatedCreator.avatarUrl),
+                    backgroundImage: getAdaptiveImageProvider(
+                      updatedCreator.avatarUrl,
+                    ),
                   ),
                   const SizedBox(height: 10),
                   Row(
@@ -184,47 +190,72 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
                       ),
                       if (updatedCreator.isVerifiedCreator) ...[
                         const SizedBox(width: 6),
-                        const Icon(Icons.verified, color: Colors.blueAccent, size: 20),
+                        const Icon(
+                          Icons.verified,
+                          color: Colors.blueAccent,
+                          size: 20,
+                        ),
                       ],
                     ],
                   ),
                   Text(
                     '@${updatedCreator.username} • ${updatedCreator.followerCount} Followers',
-                    style: const TextStyle(color: Colors.pinkAccent, fontSize: 13),
+                    style: const TextStyle(
+                      color: Colors.pinkAccent,
+                      fontSize: 13,
+                    ),
                   ),
                   if (updatedCreator.bio != null) ...[
                     const SizedBox(height: 6),
                     Text(
                       updatedCreator.bio!,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.white70, fontSize: 13),
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 13,
+                      ),
                     ),
                   ],
                   const SizedBox(height: 12),
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isFollowing ? Colors.grey.shade800 : Colors.pinkAccent,
+                      backgroundColor: isFollowing
+                          ? Colors.grey.shade800
+                          : Colors.pinkAccent,
                     ),
                     onPressed: () async {
                       await provider.toggleFollow(updatedCreator.id);
                       setModalState(() {});
                     },
-                    icon: Icon(isFollowing ? Icons.check : Icons.add, color: Colors.white),
-                    label: Text(isFollowing ? 'Following' : 'Follow', style: const TextStyle(color: Colors.white)),
+                    icon: Icon(
+                      isFollowing ? Icons.check : Icons.add,
+                      color: Colors.white,
+                    ),
+                    label: Text(
+                      isFollowing ? 'Following' : 'Follow',
+                      style: const TextStyle(color: Colors.white),
+                    ),
                   ),
                   const Divider(color: Colors.white24, height: 24),
                   const Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
                       'Creator Posts',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8),
                   Expanded(
                     child: creatorPosts.isEmpty
                         ? const Center(
-                            child: Text('No posts yet from this creator.', style: TextStyle(color: Colors.white54)),
+                            child: Text(
+                              'No posts yet from this creator.',
+                              style: TextStyle(color: Colors.white54),
+                            ),
                           )
                         : ListView.builder(
                             itemCount: creatorPosts.length,
@@ -233,17 +264,34 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
                               return Card(
                                 color: Colors.black,
                                 child: ListTile(
-                                  leading: const Icon(Icons.play_circle_fill, color: Colors.pinkAccent),
-                                  title: Text(p.caption, maxLines: 1, style: const TextStyle(color: Colors.white)),
-                                  subtitle: Text(p.category, style: const TextStyle(color: Colors.white54)),
+                                  leading: const Icon(
+                                    Icons.play_circle_fill,
+                                    color: Colors.pinkAccent,
+                                  ),
+                                  title: Text(
+                                    p.caption,
+                                    maxLines: 1,
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                  subtitle: Text(
+                                    p.category,
+                                    style: const TextStyle(
+                                      color: Colors.white54,
+                                    ),
+                                  ),
                                   onTap: () {
                                     showModalBottomSheet(
                                       context: context,
                                       isScrollControlled: true,
                                       backgroundColor: Colors.black,
                                       builder: (_) => SizedBox(
-                                        height: MediaQuery.of(context).size.height * 0.9,
-                                        child: ShortVideoPlayerItem(post: p, isSelected: true),
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                            0.9,
+                                        child: ShortVideoPlayerItem(
+                                          post: p,
+                                          isSelected: true,
+                                        ),
                                       ),
                                     );
                                   },
@@ -479,7 +527,9 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
                       margin: const EdgeInsets.only(bottom: 12),
                       child: ListTile(
                         leading: CircleAvatar(
-                          backgroundImage: getAdaptiveImageProvider(post.creatorAvatarUrl),
+                          backgroundImage: getAdaptiveImageProvider(
+                            post.creatorAvatarUrl,
+                          ),
                         ),
                         title: Text(
                           post.caption,
@@ -539,10 +589,16 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
                       color: Colors.grey.shade900,
                       margin: const EdgeInsets.only(bottom: 12),
                       child: ListTile(
-                        onTap: () => _showCreatorProfileModal(context, creator, provider),
+                        onTap: () => _showCreatorProfileModal(
+                          context,
+                          creator,
+                          provider,
+                        ),
                         leading: CircleAvatar(
                           radius: 24,
-                          backgroundImage: getAdaptiveImageProvider(creator.avatarUrl),
+                          backgroundImage: getAdaptiveImageProvider(
+                            creator.avatarUrl,
+                          ),
                         ),
                         title: Row(
                           children: [

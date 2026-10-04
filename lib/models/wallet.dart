@@ -82,17 +82,38 @@ class CommissionTransaction {
     'withdrawalId': withdrawalId,
   };
 
-  factory CommissionTransaction.fromJson(Map<String, dynamic> json) =>
-      CommissionTransaction(
-        id: json['id'],
-        creatorId: json['creatorId'],
-        orderId: json['orderId'],
-        productId: json['productId'],
-        amountPaise: json['amountPaise'],
-        status: CommissionStatus.values[json['status'] as int],
-        createdAt: DateTime.parse(json['createdAt']),
-        withdrawalId: json['withdrawalId'],
-      );
+  factory CommissionTransaction.fromJson(Map<String, dynamic> json) {
+    final id = (json['id'] as String?) ?? 'legacy_commission';
+
+    final amount =
+        (json['amountPaise'] as num?)?.toInt() ??
+        (json['commissionPaise'] as num?)?.toInt() ??
+        0;
+
+    final statusIndex = (json['status'] as num?)?.toInt();
+
+    final status =
+        statusIndex != null &&
+            statusIndex >= 0 &&
+            statusIndex < CommissionStatus.values.length
+        ? CommissionStatus.values[statusIndex]
+        : CommissionStatus.values.first;
+
+    final createdAtRaw = json['createdAt'] as String?;
+
+    return CommissionTransaction(
+      id: id,
+      creatorId: (json['creatorId'] as String?) ?? 'legacy_creator',
+      orderId: (json['orderId'] as String?) ?? 'legacy_order_$id',
+      productId: (json['productId'] as String?) ?? 'legacy_product_$id',
+      amountPaise: amount,
+      status: status,
+      createdAt: createdAtRaw != null
+          ? DateTime.parse(createdAtRaw)
+          : DateTime.fromMillisecondsSinceEpoch(0),
+      withdrawalId: json['withdrawalId'] as String?,
+    );
+  }
 
   CommissionTransaction copyWith({
     CommissionStatus? status,

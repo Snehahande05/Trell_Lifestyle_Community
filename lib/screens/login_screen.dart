@@ -33,29 +33,31 @@ class LoginScreen extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 20),
-                ...users.map((u) => Card(
-                      color: Colors.grey.shade900,
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundImage: getAdaptiveImageProvider(u.avatarUrl),
-                        ),
-                        title: Text(
-                          u.name,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        subtitle: Text(
-                          '@${u.username} • Role: ${u.role.name.toUpperCase()}',
-                          style: const TextStyle(color: Colors.white70),
-                        ),
-                        onTap: () {
-                          provider.switchDemoUser(u.id);
-                        },
+                ...users.map(
+                  (u) => Card(
+                    color: Colors.grey.shade900,
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundImage: getAdaptiveImageProvider(u.avatarUrl),
                       ),
-                    )),
+                      title: Text(
+                        u.name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      subtitle: Text(
+                        '@${u.username} • Role: ${u.role.name.toUpperCase()}',
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                      onTap: () {
+                        provider.switchDemoUser(u.id);
+                      },
+                    ),
+                  ),
+                ),
               ],
             ),
     );

@@ -5,6 +5,7 @@ import 'package:video_player/video_player.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+
 import '../models/post.dart';
 import '../models/product.dart';
 import '../providers/app_state_provider.dart';
@@ -71,9 +72,15 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem>
         if (file.existsSync()) {
           _controller = VideoPlayerController.file(file);
         } else {
-          _controller = VideoPlayerController.asset(
-            'assets/videos/fashion_trend.mp4',
+          debugPrint(
+            'Video file not found at path: $path for post: ${widget.post.id}',
           );
+          if (mounted) {
+            setState(() {
+              _hasError = true;
+            });
+          }
+          return;
         }
       }
       await _controller!.initialize();
@@ -92,6 +99,9 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem>
         }
       }
     } catch (e) {
+      debugPrint(
+        'Video initialize failed for path: ${widget.post.videoPath}, error: $e',
+      );
       if (mounted) {
         setState(() {
           _hasError = true;
