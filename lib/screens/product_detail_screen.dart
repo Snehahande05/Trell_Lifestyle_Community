@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import '../providers/app_state_provider.dart';
 import '../models/product.dart';
 import '../utils/currency_utils.dart';
+import '../utils/image_utils.dart';
 import 'cart_screen.dart';
 
 class ProductDetailScreen extends StatefulWidget {
@@ -504,7 +505,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               margin: const EdgeInsets.only(bottom: 10),
                               child: ListTile(
                                 leading: CircleAvatar(
-                                  backgroundImage: NetworkImage(
+                                  backgroundImage: getAdaptiveImageProvider(
                                     rev.userAvatarUrl,
                                   ),
                                 ),

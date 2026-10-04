@@ -8,6 +8,9 @@ import '../services/attribution_service.dart';
 import 'product_detail_screen.dart';
 import '../widgets/short_video_player_item.dart';
 
+import '../utils/image_utils.dart';
+import '../widgets/adaptive_image.dart';
+
 class ExploreSearchScreen extends StatefulWidget {
   const ExploreSearchScreen({super.key});
 
@@ -140,6 +143,124 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
     );
   }
 
+  void _showCreatorProfileModal(BuildContext context, User creator, AppStateProvider provider) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.grey.shade900,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        final creatorPosts = provider.repository
+            .getPosts()
+            .where((p) => p.creatorId == creator.id)
+            .toList();
+        final isFollowing = provider.isFollowing(creator.id);
+
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final updatedCreator = provider.getUserById(creator.id) ?? creator;
+            return Container(
+              padding: const EdgeInsets.all(20),
+              height: MediaQuery.of(context).size.height * 0.75,
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundImage: getAdaptiveImageProvider(updatedCreator.avatarUrl),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        updatedCreator.name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (updatedCreator.isVerifiedCreator) ...[
+                        const SizedBox(width: 6),
+                        const Icon(Icons.verified, color: Colors.blueAccent, size: 20),
+                      ],
+                    ],
+                  ),
+                  Text(
+                    '@${updatedCreator.username} • ${updatedCreator.followerCount} Followers',
+                    style: const TextStyle(color: Colors.pinkAccent, fontSize: 13),
+                  ),
+                  if (updatedCreator.bio != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      updatedCreator.bio!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.white70, fontSize: 13),
+                    ),
+                  ],
+                  const SizedBox(height: 12),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isFollowing ? Colors.grey.shade800 : Colors.pinkAccent,
+                    ),
+                    onPressed: () async {
+                      await provider.toggleFollow(updatedCreator.id);
+                      setModalState(() {});
+                    },
+                    icon: Icon(isFollowing ? Icons.check : Icons.add, color: Colors.white),
+                    label: Text(isFollowing ? 'Following' : 'Follow', style: const TextStyle(color: Colors.white)),
+                  ),
+                  const Divider(color: Colors.white24, height: 24),
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Creator Posts',
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: creatorPosts.isEmpty
+                        ? const Center(
+                            child: Text('No posts yet from this creator.', style: TextStyle(color: Colors.white54)),
+                          )
+                        : ListView.builder(
+                            itemCount: creatorPosts.length,
+                            itemBuilder: (context, index) {
+                              final p = creatorPosts[index];
+                              return Card(
+                                color: Colors.black,
+                                child: ListTile(
+                                  leading: const Icon(Icons.play_circle_fill, color: Colors.pinkAccent),
+                                  title: Text(p.caption, maxLines: 1, style: const TextStyle(color: Colors.white)),
+                                  subtitle: Text(p.category, style: const TextStyle(color: Colors.white54)),
+                                  onTap: () {
+                                    showModalBottomSheet(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      backgroundColor: Colors.black,
+                                      builder: (_) => SizedBox(
+                                        height: MediaQuery.of(context).size.height * 0.9,
+                                        child: ShortVideoPlayerItem(post: p, isSelected: true),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -164,7 +285,8 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
           p.description.toLowerCase().contains(query);
     }).toList();
 
-    final filteredPosts = provider.feedPosts.where((p) {
+    // Use full dataset from repository for global post search (Task 6 §10)
+    final filteredPosts = provider.repository.getPosts().where((p) {
       return p.caption.toLowerCase().contains(query) ||
           p.creatorName.toLowerCase().contains(query) ||
           p.category.toLowerCase().contains(query);
@@ -271,17 +393,10 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
                                 borderRadius: const BorderRadius.vertical(
                                   top: Radius.circular(12),
                                 ),
-                                child: Image.network(
-                                  product.imageUrl,
+                                child: AdaptiveImage(
+                                  imagePath: product.imageUrl,
                                   width: double.infinity,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, _, _) => Container(
-                                    color: Colors.grey.shade800,
-                                    child: const Icon(
-                                      Icons.shopping_bag,
-                                      color: Colors.white,
-                                    ),
-                                  ),
                                 ),
                               ),
                             ),
@@ -364,7 +479,7 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
                       margin: const EdgeInsets.only(bottom: 12),
                       child: ListTile(
                         leading: CircleAvatar(
-                          backgroundImage: NetworkImage(post.creatorAvatarUrl),
+                          backgroundImage: getAdaptiveImageProvider(post.creatorAvatarUrl),
                         ),
                         title: Text(
                           post.caption,
@@ -424,9 +539,10 @@ class _ExploreSearchScreenState extends State<ExploreSearchScreen>
                       color: Colors.grey.shade900,
                       margin: const EdgeInsets.only(bottom: 12),
                       child: ListTile(
+                        onTap: () => _showCreatorProfileModal(context, creator, provider),
                         leading: CircleAvatar(
                           radius: 24,
-                          backgroundImage: NetworkImage(creator.avatarUrl),
+                          backgroundImage: getAdaptiveImageProvider(creator.avatarUrl),
                         ),
                         title: Row(
                           children: [

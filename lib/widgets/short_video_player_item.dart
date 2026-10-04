@@ -9,6 +9,8 @@ import '../models/post.dart';
 import '../models/product.dart';
 import '../providers/app_state_provider.dart';
 import '../utils/currency_utils.dart';
+import '../utils/image_utils.dart';
+import '../widgets/adaptive_image.dart';
 import '../screens/product_detail_screen.dart';
 
 class ShortVideoPlayerItem extends StatefulWidget {
@@ -81,9 +83,12 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem>
         setState(() {
           _isInitialized = true;
         });
+        _controller!.setVolume(_isMuted ? 0.0 : 1.0);
         if (widget.isSelected && !_userPaused) {
           _controller!.play();
           _triggerViewCount();
+        } else {
+          _controller!.pause();
         }
       }
     } catch (e) {
@@ -375,7 +380,7 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem>
                   children: [
                     CircleAvatar(
                       radius: 24,
-                      backgroundImage: NetworkImage(
+                      backgroundImage: getAdaptiveImageProvider(
                         widget.post.creatorAvatarUrl,
                       ),
                     ),
@@ -574,20 +579,11 @@ class _ShortVideoPlayerItemState extends State<ShortVideoPlayerItem>
                               children: [
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(6),
-                                  child: Image.network(
-                                    product.imageUrl,
+                                  child: AdaptiveImage(
+                                    imagePath: product.imageUrl,
                                     width: 48,
                                     height: 48,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, _, _) => Container(
-                                      width: 48,
-                                      height: 48,
-                                      color: Colors.grey.shade800,
-                                      child: const Icon(
-                                        Icons.shopping_bag,
-                                        color: Colors.white,
-                                      ),
-                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 8),

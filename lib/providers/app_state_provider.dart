@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/user.dart';
 import '../models/product.dart';
@@ -31,25 +32,32 @@ class AppStateProvider extends ChangeNotifier {
     notifyListeners();
 
     await repository.init();
-    List<User> users = repository.getUsers();
-    if (users.isNotEmpty) {
-      // Default to Viewer account (Aanya)
-      _currentUser = users.firstWhere(
-        (u) => u.role == UserRole.viewer,
-        orElse: () => users.first,
-      );
+    
+    final prefs = await SharedPreferences.getInstance();
+    final savedUserId = prefs.getString('loggedInUserId');
+    if (savedUserId != null) {
+      _currentUser = repository.getUserById(savedUserId);
     }
 
     _isLoading = false;
     notifyListeners();
   }
 
-  void switchDemoUser(String userId) {
+  Future<void> switchDemoUser(String userId) async {
     User? u = repository.getUserById(userId);
     if (u != null) {
       _currentUser = u;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('loggedInUserId', u.id);
       notifyListeners();
     }
+  }
+
+  Future<void> logout() async {
+    _currentUser = null;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('loggedInUserId');
+    notifyListeners();
   }
 
   void setCategory(String category) {

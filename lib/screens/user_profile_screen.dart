@@ -7,6 +7,8 @@ import 'cart_screen.dart';
 import 'orders_screen.dart';
 import 'creator_verification_screen.dart';
 
+import '../utils/image_utils.dart';
+
 class UserProfileScreen extends StatelessWidget {
   const UserProfileScreen({super.key});
 
@@ -34,6 +36,15 @@ class UserProfileScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.grey.shade900,
         title: const Text('My Profile', style: TextStyle(color: Colors.white)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.redAccent),
+            tooltip: 'Logout',
+            onPressed: () {
+              provider.logout();
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -43,7 +54,7 @@ class UserProfileScreen extends StatelessWidget {
             const SizedBox(height: 12),
             CircleAvatar(
               radius: 46,
-              backgroundImage: NetworkImage(user.avatarUrl),
+              backgroundImage: getAdaptiveImageProvider(user.avatarUrl),
             ),
             const SizedBox(height: 12),
             Row(
@@ -154,6 +165,23 @@ class UserProfileScreen extends StatelessWidget {
                           builder: (_) => const CreatorVerificationScreen(),
                         ),
                       );
+                    },
+                  ),
+                  const Divider(color: Colors.white12, height: 1),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.logout,
+                      color: Colors.redAccent,
+                    ),
+                    title: const Text(
+                      'Logout',
+                      style: TextStyle(
+                        color: Colors.redAccent,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    onTap: () {
+                      provider.logout();
                     },
                   ),
                 ],

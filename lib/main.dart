@@ -10,6 +10,7 @@ import 'screens/video_creation_screen.dart';
 import 'screens/creator_dashboard_screen.dart';
 import 'screens/user_profile_screen.dart';
 import 'screens/admin_management_screen.dart';
+import 'screens/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,22 +58,26 @@ class MainNavigationContainer extends StatefulWidget {
 class _MainNavigationContainerState extends State<MainNavigationContainer> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = const [
-    VideoFeedScreen(), // 0. Home Short Video Feed
-    ExploreSearchScreen(), // 1. Explore & Search
-    VideoCreationScreen(), // 2. Create & Edit Video
-    CreatorDashboardScreen(), // 3. Creator Dashboard & Analytics
-    UserProfileScreen(), // 4. Profile & Wallet
-    AdminManagementScreen(), // 5. Admin Portal
-  ];
-
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AppStateProvider>();
     final user = provider.currentUser;
 
+    if (user == null) {
+      return const LoginScreen();
+    }
+
+    final screens = [
+      VideoFeedScreen(isActive: _currentIndex == 0), // 0. Home Short Video Feed
+      const ExploreSearchScreen(), // 1. Explore & Search
+      const VideoCreationScreen(), // 2. Create & Edit Video
+      const CreatorDashboardScreen(), // 3. Creator Dashboard & Analytics
+      const UserProfileScreen(), // 4. Profile & Wallet
+      const AdminManagementScreen(), // 5. Admin Portal
+    ];
+
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _screens),
+      body: IndexedStack(index: _currentIndex, children: screens),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
@@ -107,7 +112,7 @@ class _MainNavigationContainerState extends State<MainNavigationContainer> {
             icon: Icon(Icons.person),
             label: 'Profile',
           ),
-          if (user?.role == UserRole.admin)
+          if (user.role == UserRole.admin)
             const BottomNavigationBarItem(
               icon: Icon(Icons.admin_panel_settings, color: Colors.amber),
               label: 'Admin',

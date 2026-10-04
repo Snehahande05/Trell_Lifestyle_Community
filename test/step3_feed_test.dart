@@ -15,6 +15,7 @@ void main() {
       await repo.init();
       final provider = AppStateProvider(repository: repo);
       await provider.init();
+      await provider.switchDemoUser('u_viewer');
 
       final user = provider.currentUser!;
       final post = provider.feedPosts.first;

@@ -7,7 +7,9 @@ import '../widgets/short_video_player_item.dart';
 import '../widgets/demo_account_switcher.dart';
 
 class VideoFeedScreen extends StatefulWidget {
-  const VideoFeedScreen({super.key});
+  final bool isActive;
+
+  const VideoFeedScreen({super.key, this.isActive = true});
 
   @override
   State<VideoFeedScreen> createState() => _VideoFeedScreenState();
@@ -167,7 +169,8 @@ class _VideoFeedScreenState extends State<VideoFeedScreen> {
                             return ShortVideoPlayerItem(
                               key: ValueKey(post.id),
                               post: post,
-                              isSelected: index == _currentIndex,
+                              isSelected:
+                                  widget.isActive && index == _currentIndex,
                             );
                           },
                         );

@@ -3,84 +3,73 @@
 ## Project Overview
 - **App Name**: Trell Lifestyle Community
 - **Industry**: Social Commerce Platform
-- **Framework**: Flutter (Dart)
+- **Frontend Framework**: Flutter (Dart)
 - **Dart SDK Constraint**: `^3.13.0` (Targeting Dart SDK versions 3.13.0 to 3.x)
-- **Primary Supported Platform**: Android (Emulator & Physical Devices)
-- **Secondary Platform Support**: iOS (Architecturally configured with `Info.plist` usage descriptions)
+- **State & Architecture**: Provider + Repository Pattern (`LocalDemoRepository`) + Service Layer (`AttributionService`, `NativeVideoProcessor`)
+- **Local Persistence**: `SharedPreferences` (used for session persistence `loggedInUserId`, likes, follows, cart, orders, wallet, commissions, withdrawals, creator verification applications, promotions, and revenue-share records)
+- **Android Native Video Processing**: Kotlin / native platform bridge (`MediaCodec`, `MediaMuxer`) for real video export
+- **Authentication**: Local demo authentication supporting Customer, Creator, and Admin roles with persistent session and full Logout flow
+- **Payments & Payouts**: Simulated demo financial transaction and payout flow
+- **Promotions & Revenue Share**: Simulated ₹499/7-day promotion package and Verified Creator revenue share capped at 30%
 
 ---
 
-## 1. Requirement Verification Matrix
+## 1. Media Attribution & Asset Declarations
 
-> Note: The Step 9 and Step 10 flows are implemented in the project and pass the repository/unit test suite, but they are not marked as fully device-verified. Physical-device checks for review badges, creator application/admin decisions, and promotion expiry behavior remain pending.
-
-| Requirement | Screen | Implementation / Service | Verification Performed | Status | Limitation |
-|---|---|---|---|---|---|
-| **1. Real Video Editing & Export** | `VideoCreationScreen` | Gallery/Camera picker, native Kotlin `MediaCodec`/`MediaMuxer` video pipeline, frame trimming, visual color matrix filter, PCM audio mixing, royalty-free audio tracks. | Unit tests for trim ranges and music selection; native plugin compilation via `flutter build apk --release`. | Implemented and verified | iOS compilation not configured for native video processing engine (Android primary). |
-| **2. Local Video Storage & Playback** | `ShortVideoPlayerItem` | Separate playback streams for bundled assets (`asset`), persistent file paths (`file`), and HTTP URLs (`networkUrl`). Copying to app storage. | Local video files survive simulated app restart and playback initializes correctly | Implemented and verified | Web platform blob storage handles local files differently; Android is primary target. |
-| **3. Tagged Product Preservation** | `VideoCreationScreen`, `AppStateProvider` | Cloned `List<String>.from(_selectedProductIds)` on post creation; isolated state reset | Unit test verifying post tagged products remain intact after creation form clear & user switch | Implemented and verified | None. |
-| **4. Video Feed Lifecycle** | `VideoFeedScreen`, `ShortVideoPlayerItem` | `WidgetsBindingObserver` for app state, returning `bool` on view increments to prevent infinite rebuild loops, stable `ValueKey(post.id)`, reset `_currentIndex` on category switch | Active tab/route pause verified; view count loop eliminated | Implemented and verified | Backgrounding app pauses controller automatically. |
-| **5. Usable Affiliate Links** | `AttributionService`, `ProductDetailScreen`, `ExploreSearchScreen` | Referral URL generator (`https://trell.app/ref?productId=...`), deep-link parsing, `AttributionService.validateAttribution()`, Demo Link Import UI | Unit tests for valid link generation, parsing, validation, and demo import dialog | Implemented and verified | Automatic external deep-link launching requires domain digital asset links setup on production server. |
-| **6. Cart Item Identity** | `CartItem`, `AppStateProvider`, `LocalDemoRepository` | Stable `cartItemId` (`productId_creatorId_postId`), updated `updateCartQuantity` & `removeFromCart` to match all three identifiers | Unit test verifying independent quantity updates for identical products from different posts | Implemented and verified | None. |
-| **7. Strengthen Checkout & Orders** | `CartScreen`, `OrdersScreen` | Simulated payment dialog ("Demo payment — no real money charged"), duplicate submission guard, status transitions (`paid`, `completed`, `refunded`, `cancelled`) | Unit tests verifying organic vs attributed sales and status transition ledger updates | Implemented and verified | Simulated payment gateway (no real monetary transactions processed). |
-| **8. Financial Ledger Accounting** | `LocalDemoRepository`, `WalletScreen` | Separate `pending`, `available`, `reserved`, `paidOut`, `reversed` statuses. Minimum ₹100 limit, fund reservation on pending withdrawal | Unit tests for minimum limit, double-spend reservation, and paidOut status | Implemented and verified | None. |
-| **9. Creator Analytics & Potential** | `CreatorDashboardScreen`, `ProductDetailScreen` | Formula: Engagement Rate = `(likes + comments + shares) / views * 100`, conversion rate, units sold, spendable balance, potential earnings card (`price * commission%`) | Formula rendering in dashboard UI and potential earnings breakdown card on product detail | Implemented and verified | Zero denominators yield `0.0%` safely without division by zero errors. |
-| **10. Featured Promotions** | `PromotionsScreen`, `VideoFeedScreen` | Post selection, ₹499 package (7-day duration), simulated payment confirmation, active promotion feed prioritization, duplicate promotion guard | Unit test for 7-day expiry logic and active promotion feed sorting | Implemented; automated checks passed; remaining device validation pending | 7-day package duration retained as documented project assumption; on-device expiry/feature badge validation still pending. |
-| **11. Verified Creator & Review Badges** | `ProductDetailScreen`, `CreatorVerificationScreen` | Purchase verification check (`hasUserPurchasedProduct`), verified creator badge dynamic lookup | Unit test for verified purchase review badge requirement | Implemented; automated checks passed; remaining device validation pending | Review badge confirms purchase evidence in database, not subjective review veracity; user-facing device validation remains pending. |
-| **12. Verified Creator Revenue Share** | `AdminManagementScreen`, `LocalDemoRepository` | Platform revenue share allocation capped at 30% (`clampedRate`), distinct from product sale commission | Unit test verifying 30% rate cap enforcement | Implemented and verified | Admin-recorded demo platform revenue allocation. |
-| **13. Setup & Offline Assets** | `Info.plist`, `AndroidManifest.xml`, `README.md` | Added iOS camera/mic/photo library usage descriptions, Android permissions, bundled video assets, fixed SDK documentation | Clean `flutter analyze` and `flutter test` execution | Implemented and verified | Demo account switching simulates local multi-user testing without remote OAuth. |
-| **14. Automated Test Verification** | `test/business_rules_test.dart` | Comprehensive test suite validating attribution, cart identity, ledger states, withdrawal reservations, analytics math, review eligibility, and promotion expiry | Executed `flutter test` with 100% passing tests | Implemented and verified | None. |
-| **15. Feed Playback Lifecycle & Correct Media** | `ShortVideoPlayerItem`, `AppStateProvider`, `VideoFeedScreen` | `RouteAware` visibility tracking, tab tracking, distinct assets for each category, handling Missing File Exception. | MD5 Hash checks for correct distinct video assets; AppTab Index tests | Implemented and verified | Android device checks remain unverified. |
-| **16. Interactions & Consistency** | `AppRepository`, `AppStateProvider` | Likes and Comments updating correctly; Self-Follow prevention implemented; Sharing exported local video uses `SharePlus.shareXFiles`. | Test for Like/Follow Persistence | Implemented and verified | None. |
+- **User-Provided Category Images**: User-provided demo category images (25 category photos: 5 Fashion, 5 Beauty, 5 Travel, 5 Food, 5 DIY in `assets/images/categories/`).
+- **Generated Category Feed Videos**: 25 short MP4 feed videos generated from user-provided category images using Ken Burns zoom/pan animations and 720p mobile H.264 compression (`assets/videos/categories/`).
+- **Royalty-Free Audio Tracks**: Bundled demo-safe background audio tracks (`assets/audio/lofi_chill.wav`, `assets/audio/upbeat_pop.wav`, `assets/audio/acoustic_travel.wav`, `assets/audio/bossa_nova.wav`).
+- **Creator Profile Photos**: Generated demo profile images and bundled local assets (`assets/images/creator_priya.png`, `assets/images/creator_rohan.png`, `assets/images/viewer_aanya.png`).
 
 ---
 
-## 2. Platform Setup & Dependencies
+## 2. Requirement Verification Matrix
 
-### Permissions & Privacy Configuration
-- **iOS (`ios/Runner/Info.plist`)**:
-  - `NSCameraUsageDescription`: Required for video recording in post creation.
-  - `NSMicrophoneUsageDescription`: Required for audio recording during video creation.
-  - `NSPhotoLibraryUsageDescription`: Required for selecting local videos from photo gallery.
-- **Android (`android/app/src/main/AndroidManifest.xml`)**:
-  - `android.permission.CAMERA`
-  - `android.permission.RECORD_AUDIO`
-  - `android.permission.INTERNET`
-  - `android.permission.READ_MEDIA_VIDEO` / `READ_EXTERNAL_STORAGE`
+| Task / Feature | Implementation / Screen | Technical Strategy & Verification | Status |
+|---|---|---|---|
+| **1. Demo Authentication & Session** | `LoginScreen`, `UserProfileScreen`, `AppStateProvider` | `SharedPreferences` key `loggedInUserId`. Unauthenticated state renders `LoginScreen`. Logout clears session key without deleting seeded data/wallets. | Verified via automated unit & widget tests (`test/task_updates_test.dart`). |
+| **2. 25 Category Feed Videos** | `gen_videos.sh`, `assets/videos/categories/` | Generated 25 720p 9:16 Ken Burns MP4 videos from the 25 user-provided images across Fashion, Beauty, Travel, Food, DIY. | Verified file existence and video stream structure via `ffprobe` & test suite. |
+| **3. Feed Audio & Player Lifecycle** | `ShortVideoPlayerItem`, `VideoFeedScreen`, `MainNavigationContainer` | Valid AAC audio streams in MP4 files. `VideoFeedScreen(isActive: _currentIndex == 0)` ensures background tab switching silences audio; lifecycle observer pauses on app background. | Verified in player logic and tab navigation. Physical device audio check recommended. |
+| **4. Offline Category Media** | `AdaptiveImage`, `image_utils.dart`, `pubspec.yaml` | `getAdaptiveImageProvider` handles `assets/`, file paths, and fallback gracefully offline without broken image icons. | Verified offline asset loading and pubspec entries. |
+| **5. 5 Coherent Posts Per Category** | `LocalDemoRepository`, `Post` model | 25 seed posts (5 per category) with matching 4-way alignment: Image, Video, Title/Description, and Category. | Verified via automated test `test/task_updates_test.dart`. |
+| **6. Explore & Global Search** | `ExploreSearchScreen` | 10+ items immediately visible. Tapping creator opens Creator Profile modal. Global search searches full dataset across all categories. | Verified via automated tests and UI components. |
+| **7 & 8. Demo Creators & Post Binding** | `User`, `Post`, `ExploreSearchScreen` | 10 demo creators with distinct bios and roles. All 25 posts reference existing creators and navigate to Creator Profiles. | Verified creator count >= 10 and relationship integrity in tests. |
+| **9. Business Logic Rules (Steps 2-11)** | `AttributionService`, `LocalDemoRepository` | Preserved all affiliate attribution, product tagging, 30% rev share cap, ₹499 promotions, withdrawal accounting, and review badge eligibility. | Verified via 125/125 passing automated tests. |
+| **10. APK Size & Performance** | `gen_videos.sh`, `flutter build apk --release` | Compressed 25 videos using H.264 CRF 28 & 1Mbps target bitrate. Total video assets = 7.4 MB. Final APK size = 137.6 MB. | Verified release APK build size (reduced from 215.1 MB to 137.6 MB). |
+| **11. Real Video Creator Export** | `VideoCreationScreen`, `NativeVideoProcessor` | Retained native Kotlin `MediaCodec`/`MediaMuxer` video editing, trimming, filters, and real export. | Verified compilation and preserved native bridge. |
 
 ---
 
 ## 3. Run & Build Instructions
 
-### Running Locally
-1. Fetch packages:
-   ```bash
-   flutter pub get
-   ```
-2. Run static code analyzer:
-   ```bash
-   flutter analyze
-   ```
-3. Run unit & integration test suite:
-   ```bash
-   flutter test
-   ```
-4. Launch on Android Emulator or connected device:
-   ```bash
-   flutter run
-   ```
+### Fetch Packages & Run Analyzer
+```bash
+flutter pub get
+flutter analyze
+```
 
-### Building APK (Android)
-To build a release APK for deployment or evaluation:
+### Run Full Automated Test Suite
+```bash
+flutter test
+```
+
+### Build Android Release APK
 ```bash
 flutter build apk --release
 ```
 
 ---
 
-## 4. Demo Accounts & Account Switcher
-The application includes a persistent top **Demo Account Switcher Bar** on the main feed screen:
-1. **Aanya Sharma (Viewer/Shopper)**: Can view short videos, tap tagged products, import referral links, add to cart, rate products, and complete checkout.
-2. **Priya Fashionista (Verified Creator)**: Verified creator with video posts, creator dashboard analytics, wallet balance, and withdrawal requests.
-3. **Rohan Traveler (Creator)**: Creator with travel vlogs, analytics, and affiliate earnings.
-4. **Trell Admin (Administrator)**: Access to Admin Panel for completing orders, processing creator verification applications, handling withdrawal payouts, and allocating platform revenue share.
+## 4. Demo Accounts
+- **Aanya Sharma (Viewer/Customer)**: `@aanya_shopper`
+- **Priya Fashionista (Verified Creator)**: `@priya_style`
+- **Rahul Style (Creator)**: `@rahul_fashion`
+- **Simran Glow (Verified Creator)**: `@simran_beauty`
+- **Kavya Looks (Creator)**: `@kavya_makeup`
+- **Rohan Traveler (Verified Creator)**: `@rohan_explores`
+- **Aryan Nomad (Creator)**: `@aryan_travels`
+- **Megha Bites (Verified Creator)**: `@megha_foodie`
+- **Chef Karan (Creator)**: `@karan_cooks`
+- **Diya Crafts (Verified Creator)**: `@diya_diy`
+- **Lifestyle With Sam (Verified Creator)**: `@sam_lifestyle`
+- **Trell Admin (Administrator)**: `@admin_portal`

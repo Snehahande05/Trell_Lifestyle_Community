@@ -73,6 +73,11 @@ flutter:
     - assets/videos/travel_vlog.mp4
     - assets/videos/food_recipe.mp4
     - assets/videos/diy_craft.mp4
+    - assets/videos/categories/fashion/
+    - assets/videos/categories/beauty/
+    - assets/videos/categories/travel/
+    - assets/videos/categories/food/
+    - assets/videos/categories/diy/
     - assets/audio/lofi_chill.wav
     - assets/audio/upbeat_pop.wav
     - assets/audio/acoustic_travel.wav
@@ -83,6 +88,12 @@ flutter:
     - assets/images/product_lipstick.png
     - assets/images/product_jacket.png
     - assets/images/product_duffle.png
+    - assets/images/categories/fashion/
+    - assets/images/categories/beauty/
+    - assets/images/categories/travel/
+    - assets/images/categories/food/
+    - assets/images/categories/diy/
+    - assets/images/creators/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
